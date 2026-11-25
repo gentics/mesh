@@ -8,7 +8,7 @@
     <title>Mesh Restful API documentation - Gentics Mesh</title>
     <link rel="icon" href="../favicon.ico">
     <link rel="shortcut icon" href="../assets/g_logo_small.png" type="image/png" />
-    <link href="../styles/raml.css" media="screen" rel="stylesheet">
+    <link href="../../styles/raml.css" media="screen" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>

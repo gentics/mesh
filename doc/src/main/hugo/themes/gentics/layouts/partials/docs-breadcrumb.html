@@ -1,0 +1,57 @@
+{{- /*
+  Breadcrumb like the Gentics Infoportal (https://www.gentics.com/infoportal), where Gentics Mesh is
+  listed under "Standalone Products":
+    Infoportal › Standalone Products › Gentics Mesh › <menu section of the page> › <page title>
+  The menu section comes from data/docsmenu.yaml; it is left out when the page is the section page.
+  Param: the current page
+*/ -}}
+{{- $cur := .RelPermalink -}}
+{{- $isIndex := eq .Kind "section" -}}
+{{- $s := newScratch -}}
+{{- $found := newScratch -}}
+{{- if not $isIndex -}}
+    {{- range .Site.Data.docsmenu.sections -}}
+        {{- if not ($found.Get "section") -}}
+            {{- partial "docs-menu-active.html" (dict "section" . "cur" $cur "s" $s) -}}
+            {{- if $s.Get "active" }}{{ $found.Set "section" . }}{{ end -}}
+        {{- end -}}
+    {{- end -}}
+{{- end }}
+<nav class="breadcrumb" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+        <li class="breadcrumb-item">
+            <a href="https://www.gentics.com/infoportal" class="breadcrumb-link">Infoportal</a>
+        </li>
+        <li class="breadcrumb-item">
+            <span>Standalone Products</span>
+        </li>
+        {{- if $isIndex }}
+        <li class="breadcrumb-item active" aria-current="page">
+            <span class="breadcrumb-current">Gentics Mesh</span>
+        </li>
+        {{- else }}
+        <li class="breadcrumb-item">
+            <a href="/docs/" class="breadcrumb-link">Gentics Mesh</a>
+        </li>
+        {{- with $found.Get "section" }}
+            {{- $isSectionPage := false -}}
+            {{- with .url -}}
+                {{- partial "docs-menu-target.html" (dict "url" . "s" $s) -}}
+                {{- $isSectionPage = and (ne ($s.Get "target") "") (strings.HasSuffix $cur ($s.Get "target")) -}}
+            {{- end -}}
+            {{- if not $isSectionPage }}
+        <li class="breadcrumb-item">
+            {{- if .url }}
+            {{ partial "docs-menu-link.html" (dict "entry" . "cur" $cur "class" "breadcrumb-link") }}
+            {{- else }}
+            <span>{{ .title }}</span>
+            {{- end }}
+        </li>
+            {{- end }}
+        {{- end }}
+        <li class="breadcrumb-item active" aria-current="page">
+            <span class="breadcrumb-current">{{ .Title }}</span>
+        </li>
+        {{- end }}
+    </ol>
+</nav>

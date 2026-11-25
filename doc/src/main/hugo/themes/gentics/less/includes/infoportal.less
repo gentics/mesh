@@ -1,0 +1,725 @@
+//
+// Gentics Infoportal look (GPU-2197)
+// --------------------------------------------------
+// Values taken from the Infoportal stylesheets:
+//   https://www.gentics.com/static/css/common.css
+//   https://www.gentics.com/static/infoportal/files/css/infoportal.css
+//   https://www.gentics.com/static/infoportal/files/css/hljs-foundation.min.css
+// Imported last so it overrides main.less and the asciidoctor theme.
+
+@ip-primary:         #0099D8;
+@ip-primary-dark:    #0077AA;
+@ip-primary-light:   #E6F5FB;
+@ip-primary-lighter: #F0F9FD;
+@ip-text-dark:       #1A1A1A;
+@ip-text-medium:     #404040;
+@ip-text-light:      #6B6B6B;
+@ip-bg-light:        #F8F9FA;
+@ip-border:          #E0E0E0;
+@ip-shadow-sm:       0 2px 4px rgba(0, 153, 216, 0.08);
+@ip-font:            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+@ip-font-mono:       'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+
+// Base typography
+
+html,
+body {
+    font-family: @ip-font;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.6;
+    color: @ip-text-medium;
+    background: #fff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: @ip-text-dark;
+    font-family: @ip-font;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+a {
+    color: @ip-primary;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover,
+    &:focus {
+        color: @ip-primary-dark;
+        text-decoration: none;
+    }
+}
+
+.sectionbody a {
+    text-decoration: none;
+}
+
+// Header
+
+.navbar,
+.navbar-default {
+    background: #fff;
+    border: 0;
+    border-bottom: 1px solid @ip-border;
+    border-radius: 0;
+    height: auto;
+    min-height: 0;
+    padding: 16px 0;
+    margin-bottom: 0;
+}
+
+.navbar-header {
+    height: auto;
+    float: none;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: auto;
+    padding: 0 5px;
+    float: none;
+
+    .logo {
+        position: static;
+        height: 40px;
+        width: auto;
+    }
+}
+
+.navbar-brand-text {
+    position: static;
+    font-size: 18px;
+    font-weight: 600;
+    color: @ip-text-dark;
+    white-space: nowrap;
+    margin-top: 6px;
+
+    // Infoportal hides the headline next to the logo on mobile
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+// Title band (Infoportal .hero-small)
+
+.topsection-wrapper {
+    background: linear-gradient(135deg, @ip-primary 0%, @ip-primary-dark 100%);
+    color: #fff;
+    padding: 12px 0;
+
+    h1 {
+        color: #fff;
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0;
+
+        @media (max-width: 768px) {
+            font-size: 30px;
+        }
+    }
+}
+
+.topsection {
+    padding-bottom: 0;
+}
+
+// Docs sub navigation under the title band
+
+.topsection-wrapper-white {
+    background: #fff;
+    border-bottom: 1px solid @ip-border;
+
+    .nav > li > a {
+        color: @ip-text-medium;
+        font-size: 14px;
+        font-weight: 500;
+
+        &:hover,
+        &:focus {
+            color: @ip-primary;
+            background: @ip-primary-lighter;
+        }
+    }
+}
+
+// Footer
+
+.footer {
+    background: @ip-text-dark;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 32px 20px;
+    text-align: center;
+    font-size: 15px;
+
+    a,
+    a:focus {
+        color: rgba(255, 255, 255, 0.7);
+        border-bottom: 0;
+    }
+
+    a:hover {
+        color: #fff;
+        border-bottom: 0;
+    }
+}
+
+// Content headings
+
+.docs-content {
+    h1 { font-size: 44px; }
+    h2 { font-size: 36px; margin-bottom: 24px; }
+    h3 { font-size: 28px; margin-bottom: 20px; }
+    h4 { font-size: 22px; margin-bottom: 16px; }
+}
+
+.sect1 + .sect1 {
+    border-top-color: @ip-border;
+}
+
+// TOC sidebar (Infoportal side-nav look)
+
+#sidebar {
+    font-size: 13px;
+
+    & > .nav {
+        a {
+            color: @ip-text-medium;
+            font-weight: 500;
+            padding: 6px 16px;
+            border-left: 3px solid transparent;
+
+            &:hover,
+            &:focus {
+                background: @ip-primary-lighter;
+                color: @ip-primary;
+                border-left-color: transparent;
+            }
+        }
+
+        & > .active > a,
+        & > .active > a:hover {
+            background: @ip-primary-light;
+            color: @ip-primary;
+            font-weight: 600;
+            border-left: 3px solid @ip-primary;
+            padding-left: 16px;
+        }
+
+        .nav li {
+            border-left: 0;
+
+            a,
+            &:last-child a,
+            &:last-child a:hover {
+                padding: 5px 16px 5px 32px;
+                font-size: 12px;
+                font-weight: 400;
+            }
+
+            &.active a {
+                background: @ip-primary-light;
+                color: @ip-primary;
+                font-weight: 600;
+                border-left: 3px solid transparent;
+                padding-left: 32px;
+            }
+        }
+    }
+}
+
+// Inline code
+
+code {
+    font-family: @ip-font-mono;
+    font-size: 0.875em;
+    background: #fdf0f6;
+    color: #d63384;
+    border: 1px solid #f5c2dc;
+    border-radius: 4px;
+    padding: 2px 6px;
+}
+
+a code,
+.tableblock a code {
+    color: inherit;
+}
+
+// Code blocks (light, hljs-foundation colours)
+
+pre,
+.listingblock pre.highlight,
+.literalblock pre {
+    background: #eee;
+    border: 1px solid @ip-border;
+    border-radius: 6px;
+    padding: 0;
+
+    code,
+    code.hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 0.75rem;
+        background: #eee;
+        color: #000;
+        border: 0;
+        border-radius: 0;
+        font-family: @ip-font-mono;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+}
+
+.listingblock > .title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    margin: 0;
+    background: @ip-bg-light;
+    border: 1px solid @ip-border;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    font-family: @ip-font-mono;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    color: @ip-text-medium;
+
+    &::before {
+        content: '';
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: @ip-border;
+    }
+
+    & + .content pre {
+        border-top-left-radius: 0;
+    }
+}
+
+.hljs { background: #eee; color: #000; }
+
+// Token colours: reset the dark "Rainbow" colours from syntax.less first,
+// so tokens the foundation theme does not colour fall back to plain text.
+.hljs {
+    [class*="hljs-"] { color: inherit; background: none; font-style: normal; font-weight: inherit; }
+
+    .hljs-addition, .hljs-attribute, .hljs-emphasis, .hljs-link { color: #070; }
+    .hljs-emphasis { font-style: italic; }
+    .hljs-deletion, .hljs-string, .hljs-strong { color: #d14; }
+    .hljs-strong { font-weight: 700; }
+    .hljs-comment, .hljs-quote { color: #998; font-style: italic; }
+    .hljs-section, .hljs-title { color: #900; }
+    .hljs-class .hljs-title, .hljs-title.class_, .hljs-type { color: #458; }
+    .hljs-template-variable, .hljs-variable { color: #369; }
+    .hljs-bullet { color: #970; }
+    .hljs-meta { color: #34b; }
+    .hljs-code, .hljs-keyword, .hljs-literal, .hljs-number, .hljs-selector-tag { color: #099; }
+    .hljs-regexp { background-color: #fff0ff; color: #808; }
+    .hljs-symbol { color: #990073; }
+    .hljs-name, .hljs-selector-class, .hljs-selector-id, .hljs-tag { color: #070; }
+}
+
+// Tables
+
+table.tableblock {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid @ip-border;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: @ip-shadow-sm;
+    font-size: 15px;
+    background: #fff;
+
+    & > thead > tr > th,
+    & > tbody > tr > th,
+    & > thead > tr > td,
+    & > tbody > tr > td {
+        border: 0;
+        border-bottom: 1px solid @ip-border;
+        padding: 12px 16px;
+        vertical-align: middle;
+        line-height: 1.5;
+        color: @ip-text-medium;
+    }
+
+    & > thead > tr > th {
+        background: @ip-primary-light;
+        color: @ip-primary-dark;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 2px solid @ip-primary;
+    }
+
+    & > tbody > tr:nth-child(even) > td {
+        background: @ip-primary-lighter;
+    }
+
+    & > tbody > tr:hover > td,
+    & > tbody > tr:hover > th {
+        background: @ip-primary-light;
+    }
+
+    & > tbody > tr:last-child > td,
+    & > tbody > tr:last-child > th {
+        border-bottom: 0;
+    }
+
+    p.tableblock {
+        margin: 0;
+    }
+}
+
+// Admonitions as Infoportal callouts
+
+.callout-type(@bg; @accent; @title) {
+    background: @bg;
+    border-left-color: @accent;
+
+    & > table td.icon i,
+    & > table td.icon .title {
+        background: @accent;
+    }
+
+    & > table td.content > .title {
+        color: @title;
+    }
+}
+
+.admonitionblock {
+    margin: 20px 0;
+    padding: 16px 20px;
+    border-left: 4px solid;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.6;
+
+    & > table,
+    & > table.table,
+    & > table.table-bordered {
+        width: 100%;
+        margin: 0;
+        border: 0;
+        background: none;
+
+        & > tbody > tr > td,
+        & > tr > td {
+            border: 0;
+            background: none;
+            padding: 0;
+            vertical-align: top;
+        }
+
+        & > tbody > tr:hover > td,
+        & > tr:hover > td {
+            background: none;
+        }
+
+        td.icon {
+            width: 44px;
+            padding-right: 16px;
+
+            i,
+            .title {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 700;
+                color: #fff;
+            }
+
+            i:before {
+                color: #fff;
+                font-size: 14px;
+            }
+        }
+
+        td.content {
+            color: @ip-text-medium;
+
+            & > .title {
+                font-weight: 700;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+            }
+
+            & > :last-child,
+            & > .paragraph:last-child p {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &.note      { .callout-type(#EBF6FD; @ip-primary; @ip-primary-dark); }
+    &.tip       { .callout-type(#F0FBF0; #4CAF50; #2E7D32); }
+    &.warning   { .callout-type(#FFF8ED; #FF9800; #E65100); }
+    &.caution   { .callout-type(#FFF8ED; #FF9800; #E65100); }
+    &.important { .callout-type(#FEF0F0; #E53935; #B71C1C); }
+}
+
+// Docs layout: side menu (partial docs-menu.html) | content | "on this page" TOC
+
+@ip-side-nav-width: 280px;
+
+.docs-layout {
+    display: flex;
+    align-items: flex-start;
+}
+
+.docs-main {
+    flex: 1;
+    min-width: 0;
+    padding: 20px 30px 100px;
+    border-left: 1px solid @ip-border;
+}
+
+// TOC column stretches to the content height so the TOC can stick (replaces the Bootstrap affix)
+@media (min-width: @screen-lg-min) {
+    .docs-main > .row {
+        display: flex;
+    }
+}
+
+#sidebar {
+    position: sticky;
+    top: 20px;
+}
+
+// Side menu (values from the Infoportal side-nav)
+
+.docs-menu {
+    flex: 0 0 @ip-side-nav-width;
+    width: @ip-side-nav-width;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 12px 0;
+    background: #fff;
+
+    // always visible on desktop; Bootstrap collapse only acts on mobile
+    &.collapse {
+        display: block;
+    }
+
+    .nav-list,
+    .nav-submenu {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        color: @ip-text-medium;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+        text-decoration: none;
+        transition: all 0.2s ease;
+
+        &:hover,
+        &:focus {
+            background: @ip-primary-lighter;
+            color: @ip-primary;
+        }
+    }
+
+    summary.nav-link {
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+    }
+
+    .nav-title {
+        flex: 1;
+        color: inherit;
+    }
+
+    .nav-caret {
+        margin-left: auto;
+        font-size: 14px;
+        color: @ip-text-light;
+        transition: transform 0.2s ease;
+    }
+
+    details[open] > summary .nav-caret {
+        transform: rotate(90deg);
+    }
+
+    // section of the current page
+    .nav-list > .nav-item.active > details > summary.nav-link,
+    .nav-list > .nav-item.active > a.nav-link {
+        background: @ip-primary-light;
+        color: @ip-primary;
+        font-weight: 600;
+        border-left: 3px solid @ip-primary;
+        padding-left: 13px;
+    }
+
+    .nav-submenu .nav-link {
+        display: block;
+        padding-left: 40px;
+        font-size: 12px;
+        font-weight: 400;
+    }
+
+    .nav-submenu .nav-submenu .nav-link {
+        padding-left: 52px;
+        font-size: 11px;
+    }
+
+    // the current page itself
+    .nav-submenu .nav-link.active {
+        background: @ip-primary-light;
+        color: @ip-primary;
+        font-weight: 600;
+    }
+}
+
+// Mobile: menu opens as a panel below the title band (hamburger in the navbar)
+@media (max-width: 768px) {
+    .docs-layout {
+        display: block;
+    }
+
+    .docs-main {
+        border-left: 0;
+        padding: 20px 15px 60px;
+    }
+
+    .docs-menu {
+        width: 100%;
+        position: static;
+        max-height: none;
+        border-bottom: 1px solid @ip-border;
+
+        &.collapse {
+            display: none;
+        }
+
+        &.collapse.in,
+        &.collapsing {
+            display: block;
+        }
+    }
+
+    .navbar-toggle {
+        margin: 0 0 0 auto;
+        border: 0;
+
+        .icon-bar {
+            width: 24px;
+            height: 3px;
+            border-radius: 2px;
+            background: @ip-text-dark;
+        }
+    }
+}
+
+// Breadcrumb (partial docs-breadcrumb.html; values from the Infoportal common.css)
+
+.docs-main {
+    padding-top: 0;
+}
+
+.breadcrumb {
+    margin: 0 -30px 20px;
+    padding: 7px 16px;
+    border-bottom: 1px solid @ip-border;
+    background: none;
+    border-radius: 0;
+}
+
+.breadcrumb-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    line-height: 1.4;
+    color: @ip-text-medium;
+
+    &:not(:last-child)::after {
+        content: '›';
+        display: inline-block;
+        margin: 0 12px;
+        color: @ip-text-light;
+        font-size: 16px;
+        font-weight: 400;
+    }
+}
+
+.breadcrumb-link {
+    display: inline-flex;
+    align-items: center;
+    color: @ip-text-medium;
+    font-weight: 500;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        color: @ip-primary;
+        background: @ip-primary-lighter;
+    }
+}
+
+.breadcrumb-current {
+    color: @ip-text-dark;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .breadcrumb {
+        margin: 0 -15px 20px;
+        padding: 12px 16px;
+    }
+
+    .breadcrumb-item {
+        font-size: 13px;
+
+        &:not(:last-child)::after {
+            margin: 0 8px;
+        }
+    }
+}
+
+// divider between menu and content runs the full height, also when the content is shorter than the menu
+.docs-main {
+    align-self: stretch;
+}
+
+.docs-menu {
+    align-self: flex-start;
+}

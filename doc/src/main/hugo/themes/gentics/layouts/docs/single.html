@@ -25,14 +25,17 @@
         </div>
     </div>
  {{end}}
-  <div class="container docs-content">
+<div class="docs-layout">
+  {{ partial "docs-menu.html" . }}
+  <div class="docs-main container-fluid docs-content">
+    {{ partial "docs-breadcrumb.html" . }}
     <div class="row">
-      <div class="col-sm-12 col-md-push-9 col-md-3 hidden-xs hidden-sm">
-        <div id="sidebar" data-spy="affix">
+      <div class="col-lg-push-9 col-lg-3 visible-lg-block">
+        <div id="sidebar">
             {{ .TableOfContents }}
         </div>
       </div>
-      <div class="col-sm-12 col-md-pull-3 col-md-9">
+      <div class="col-sm-12 col-lg-pull-3 col-lg-9">
         <div class="toc hidden-md hidden-lg">
           <h2>{{ .Title }}</h2>
           {{ .TableOfContents }}
@@ -66,4 +69,5 @@
       </div>
     </div>
   </div>
+</div>
 {{end}}
