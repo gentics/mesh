@@ -2,6 +2,7 @@ package com.gentics.mesh.core.endpoint.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML;
+import static com.gentics.mesh.http.HttpConstants.TEXT_PLAIN_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -11,6 +12,7 @@ import com.gentics.mesh.core.db.Database;
 import com.gentics.mesh.etc.config.Format;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.example.RestInfoExamples;
+import com.gentics.mesh.parameter.impl.OpenAPIParametersImpl;
 import com.gentics.mesh.rest.InternalEndpointRoute;
 import com.gentics.mesh.router.RouterStorage;
 import com.gentics.mesh.router.route.AbstractInternalEndpoint;
@@ -79,6 +81,25 @@ public class RestInfoEndpoint extends AbstractInternalEndpoint {
 			InternalActionContext ac = wrap(rc);
 			if (getOptions().isServeOpenApi()) {
 				adminHandler.handleOpenAPIv3(ac);
+			} else {
+				ac.send(HttpResponseStatus.FORBIDDEN);
+			}
+		}, false);
+
+		secure("/openapi");
+		InternalEndpointRoute openapi = createRoute();
+		openapi.path("/openapi");
+		openapi.method(GET);
+		openapi.description("Endpoint which provides an OpenAPIv3 document for all registed endpoints.");
+		openapi.displayName("OpenAPI specification");
+		openapi.exampleResponse(OK, "Not yet specified");
+		openapi.produces(TEXT_PLAIN_UTF8);
+		openapi.addQueryParameters(OpenAPIParametersImpl.class);
+		openapi.blockingHandler(rc -> {
+			InternalActionContext ac = wrap(rc);
+			if (getOptions().isServeOpenApi()) {
+				OpenAPIParametersImpl openApiParameters = new OpenAPIParametersImpl(ac);
+				adminHandler.handleOpenAPIv3(ac, openApiParameters.getFormat(), openApiParameters.getVersion());
 			} else {
 				ac.send(HttpResponseStatus.FORBIDDEN);
 			}
