@@ -1,6 +1,6 @@
 package com.gentics.mesh.contentrag.service.status;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.contentrag.index.RagChunkFields;
 import com.gentics.mesh.contentrag.index.RagIndexNaming;
 import com.gentics.mesh.contentrag.service.config.RagProperties;

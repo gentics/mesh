@@ -1,6 +1,6 @@
 package com.gentics.mesh.contentrag.service.es;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.gentics.mesh.contentrag.common.model.Chunk;
 import com.gentics.mesh.contentrag.common.model.PublishStatus;
 import com.gentics.mesh.contentrag.index.RagChunkFields;

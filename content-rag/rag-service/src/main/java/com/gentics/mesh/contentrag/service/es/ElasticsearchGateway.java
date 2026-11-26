@@ -1,16 +1,18 @@
 package com.gentics.mesh.contentrag.service.es;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Schmaler Wrapper um den Low-Level-RestClient. Bewusst minimal: der Service liest Chunks und
@@ -123,7 +125,7 @@ public class ElasticsearchGateway {
     private String toJson(JsonNode node) {
         try {
             return mapper.writeValueAsString(node);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new EsException("JSON-Serialisierung fehlgeschlagen", e);
         }
     }
