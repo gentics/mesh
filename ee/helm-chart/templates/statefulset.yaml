@@ -62,6 +62,9 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
 {{- include "mesh.envVars" . | nindent 8 }}
+{{- with include "gentics-common.otelEnv" (dict "root" . "local" .Values.otel "extraEnv" .Values.extraEnv "defaultServiceName" "Gentics Mesh" "defaultAgentPath" "/mesh/opentelemetry-javaagent.jar") }}
+{{- . | nindent 8 }}
+{{- end }}
 
         ports:
           - name: http

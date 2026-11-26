@@ -123,6 +123,26 @@ extraEnv:
 # - name: MESH_ELASTICSEARCH_URL
 #   value: "http://elasticsearch:9200"
 
+# OpenTelemetry: loads the OTel Java agent from the image (via JDK_JAVA_OPTIONS, so
+# JAVA_TOOL_OPTIONS above stays untouched) and sends traces, metrics and logs to an
+# OTLP endpoint. Any OTEL_* or JDK_JAVA_OPTIONS variable set in extraEnv wins.
+# Under the CMP umbrella, global.otel.* provides the defaults.
+otel:
+  # null: follow global.otel.enabled (off when unset); true/false: override
+  enabled: null
+  # OTLP endpoint; empty: global.otel.endpoint, then the umbrella's bundled
+  # Collector http://<release>-opentelemetry-collector:4318
+  endpoint: ""
+  # OTLP protocol; empty: global.otel.protocol, then http/protobuf
+  protocol: ""
+  # Secret with key "headers", e.g. "Authorization=Bearer <token>", sent with every
+  # export (only for endpoints that need authentication); empty: global.otel.headersSecret
+  headersSecret: ""
+  # empty: "Gentics Mesh"
+  serviceName: ""
+  # empty: /mesh/opentelemetry-javaagent.jar (part of the Mesh image)
+  agentPath: ""
+
 # By default, a default configmap will be created
 # existingConfigmap: "mesh-custom-config"
 # All settings in mesh.yml are configurable with env vars (See: extraEnv)
