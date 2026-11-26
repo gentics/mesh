@@ -49,7 +49,9 @@ import com.gentics.mesh.plugin.forms.handler.status.SetNoIndexHandler;
 import com.gentics.mesh.plugin.forms.handler.translation.GetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.handler.translation.SetTranslationsHandler;
 import com.gentics.mesh.plugin.forms.service.BinaryDataMigrationService;
+import com.gentics.mesh.plugin.forms.postprocessing.PostProcessingRegistry;
 import com.gentics.mesh.plugin.forms.service.FormDataService;
+import com.gentics.mesh.plugin.forms.service.PostProcessingService;
 import com.gentics.mesh.plugin.forms.service.PurgeService;
 import com.gentics.mesh.plugin.forms.service.StatusService;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -66,6 +68,8 @@ public interface FormsPluginComponent {
 	FormDataService formDataService();
 
 	PurgeService purgeService();
+
+	PostProcessingService postProcessingService();
 
 	BinaryDataMigrationService binaryDataMigrationService();
 
@@ -165,6 +169,9 @@ public interface FormsPluginComponent {
 
 		@BindsInstance
 		Builder env(PluginEnvironment env);
+
+		@BindsInstance
+		Builder postProcessingRegistry(PostProcessingRegistry registry);
 
 		FormsPluginComponent build();
 	}

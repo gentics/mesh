@@ -1,0 +1,17 @@
+query($perPage: Long) {
+  schema(name: "{{{ schemaName }}}") {
+    nodes(filter: {fields: { {{{ schemaName }}}: {status: {oneOf: ["PENDING", "RUNNING"]}}}}, perPage: $perPage) {
+      elements {
+        uuid
+        dataNode: parent {
+          uuid
+          dataFolder: parent {
+            form: parent {
+              uuid
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -73,6 +73,14 @@ A specification of the API can be found in the file `api.yaml`. You can paste th
 
 | `validateElements` | boolean | Should the form be validated, before is gets stored or updated? | `false`
 
+| `postProcessing` | object | Settings for the post processing of published form data (see <<Post Processing>>) | 
+
+| `postProcessing.actions` | map of objects | Optional properties for post processing actions. Each entry maps the key of a post processing action to the properties, which are passed to the action. | 
+
+| `postProcessing.maxAttempts` | integer | Maximum number of attempts for performing a post processing action. When the action failed this many times, it is marked as `FAILED`. | `3`
+
+| `postProcessing.retryInterval` | integer | Interval in seconds of the job, which retries failed post processing actions and resumes interrupted ones. If the provided value is `0` or a negative number, the job is not started. | `300`
+
 |===
 
 
@@ -506,6 +514,56 @@ For extending the forms-plugin, a new maven project must be created, that uses t
 === Custom Elements
 * Custom elements can be implemented by extending class `com.gentics.mesh.plugin.forms.model.FormElement`
 * Mapping for custom element types to classes must be added to `elements` in the configuration file `config.yml`
+
+=== Post Processing
+
+Custom post processing actions are performed asynchronously, after form data has been published (i.e. when a completed form is submitted).
+
+* Post processing actions are implemented as classes implementing `com.gentics.mesh.plugin.forms.postprocessing.PostProcessingAction`.
+* The classes must be annotated with `@PostProcessing("<key>")`, where `<key>` is a unique key for the action.
+* The classes must be located in the package `com.gentics.mesh.plugin.forms.postprocessing` and must have a public constructor without arguments. The package is scanned once, when the plugin is started. A single instance of every action is created, so implementations must be thread safe.
+* Optional properties for an action can be configured with `postProcessing.actions.<key>` in the configuration file `config.yml`. Like all other settings, they can be overwritten per form type.
+
+The interface defines two methods, which both get the properties of the action configuration (an empty map, if nothing is configured), the form definition, the posted form data and the language of the posted data:
+
+* `boolean shouldProcess(Map<String, Object> properties, Form form, PostedData postedData, String language)` is called when the form data is published and decides, whether the action must be performed.
+* `Completable process(Map<String, Object> properties, Form form, PostedData postedData, String language)` performs the action asynchronously.
+
+[source,java]
+----
+package com.gentics.mesh.plugin.forms.postprocessing;
+
+@PostProcessing("crm-export")
+public class CrmExportAction implements PostProcessingAction {
+	@Override
+	public boolean shouldProcess(Map<String, Object> properties, Form form, PostedData postedData, String language) {
+		return StringUtils.isNotBlank(postedData.getString("email"));
+	}
+
+	@Override
+	public Completable process(Map<String, Object> properties, Form form, PostedData postedData, String language) {
+		String url = (String) properties.get("url");
+		// send the data to the CRM
+		return Completable.complete();
+	}
+}
+----
+
+[source,yml]
+----
+postProcessing:
+  actions:
+    crm-export:
+      url: "https://crm.example.com/api/import"
+----
+
+For every action that must be performed, a status node (schema `form_postprocessing`) is created as child of the form data node, before the form data is published.
+The status node contains the fields `key`, `status` (`PENDING`, `RUNNING`, `DONE` or `FAILED`), `attempts`, `language`, `error` (message of the last failed attempt) and `lastUpdate`.
+
+* After publishing, pending actions are performed immediately.
+* If an action fails, it is retried by a periodic job (every `postProcessing.retryInterval` seconds) until `postProcessing.maxAttempts` is reached; then it is marked as `FAILED`.
+* The periodic job also performs actions, which were not finished because Mesh was stopped (actions which are `PENDING`, or have been `RUNNING` for more than one hour). In a cluster, the job only runs on the coordination master.
+* When the form data is deleted, the status nodes are deleted as well.
 
 == Handlebars helpers
 

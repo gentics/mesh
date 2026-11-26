@@ -60,3 +60,10 @@ custom:
   test: "test"
   testobject:
     testfield: "another test field"
+postProcessing:
+  maxAttempts: 2
+  retryInterval: 3
+  actions:
+    recording:
+      greeting: "hello"
+      count: 42

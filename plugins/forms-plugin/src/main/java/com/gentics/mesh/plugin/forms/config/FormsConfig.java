@@ -67,6 +67,9 @@ public class FormsConfig implements Option {
 	@JsonProperty("security")
 	private SecurityOptions securityOptions = new SecurityOptions();
 
+	@JsonProperty("postProcessing")
+	private PostProcessingOptions postProcessingOptions = new PostProcessingOptions();
+
 	private boolean testing;
 
 	public String getFromAddress() {
@@ -308,6 +311,21 @@ public class FormsConfig implements Option {
 
 	public FormsConfig setSecurityOptions(SecurityOptions securityOptions) {
 		this.securityOptions = securityOptions;
+
+		return this;
+	}
+
+	@Nonnull
+	public PostProcessingOptions getPostProcessingOptions() {
+		if (postProcessingOptions == null) {
+			postProcessingOptions = new PostProcessingOptions();
+		}
+
+		return postProcessingOptions;
+	}
+
+	public FormsConfig setPostProcessingOptions(PostProcessingOptions postProcessingOptions) {
+		this.postProcessingOptions = postProcessingOptions;
 
 		return this;
 	}
