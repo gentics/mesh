@@ -1,9 +1,9 @@
 package com.gentics.mesh.contentrag.service.es;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.gentics.mesh.contentrag.common.model.RagQuery;
 import com.gentics.mesh.contentrag.common.model.RetrievedChunk;
 import com.gentics.mesh.contentrag.common.spi.Retriever;

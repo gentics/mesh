@@ -1,12 +1,5 @@
 package com.gentics.mesh.contentrag.service.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.mesh.contentrag.service.config.RagProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,6 +13,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import com.gentics.mesh.contentrag.service.config.RagProperties;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Loest Rollen gegen Mesh auf — Mesh bleibt damit die einzige Autoritaet fuer Berechtigungen,
@@ -200,7 +203,7 @@ public class MeshPrincipalResolver implements PrincipalResolver {
         }
         try {
             return mapper.readTree(response.body());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new MeshUnavailableException("Antwort von Mesh nicht lesbar: " + path, e);
         }
     }

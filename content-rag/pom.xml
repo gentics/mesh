@@ -46,18 +46,16 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- TODO remove this in favor of proper management in the Mesh BOM -->
-            <dependency>
-                <groupId>io.micrometer</groupId>
-                <artifactId>micrometer-core</artifactId>
-                <version>1.15.12</version>
-            </dependency>
 			<dependency>
 				<groupId>com.gentics.mesh</groupId>
 				<artifactId>mesh-bom</artifactId>
 				<type>pom</type>
 				<scope>import</scope>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.micrometer</groupId>
+				<artifactId>micrometer-registry-prometheus</artifactId>
 			</dependency>
 
             <!-- Muss vor dem Spring-Boot-BOM stehen: die erste Deklaration gewinnt, damit
