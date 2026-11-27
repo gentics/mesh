@@ -59,8 +59,11 @@ import com.gentics.mesh.hibernate.data.domain.HibDatabaseElement;
 import com.gentics.mesh.hibernate.util.HibernateUtil;
 import com.gentics.mesh.hibernate.util.JpaUtil;
 import com.gentics.mesh.hibernate.util.UuidGenerator;
+import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.gentics.mesh.security.SecurityUtils;
 
+import io.micrometer.core.instrument.Timer;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -91,12 +94,14 @@ public class HibernateTxImpl implements HibernateTx {
 	private final S3Binaries s3Binaries;
 	private final ContentStorage contentStorage;
 
+	private Timer commitTimer;
+
 	private final List<HibernateTxAction0> deferredActions = new ArrayList<>();
 
 	@Inject
 	public HibernateTxImpl(HibernateDatabase db, HibTxData txData, HibDaoCollectionImpl daoCollection,
 			Binaries binaries, CacheCollection caches, SecurityUtils security, UuidGenerator uuidGenerator,
-			ContextDataRegistry contextDataRegistry, S3Binaries s3Binaries, ContentStorage contentStorage) {
+			MetricsService metrics, ContextDataRegistry contextDataRegistry, S3Binaries s3Binaries, ContentStorage contentStorage) {
 		this.parentTx = HibernateTx.get();
 		this.txData = txData;
 		this.contextDataRegistry = contextDataRegistry;
@@ -107,7 +112,9 @@ public class HibernateTxImpl implements HibernateTx {
 		this.binaries = binaries;
 		this.s3Binaries = s3Binaries;
 		this.contentStorage = contentStorage;
-
+		if (metrics != null) {
+			this.commitTimer = metrics.timer(SimpleMetric.COMMIT_TIME);
+		}		
 		if (isNested()) {
 			this.em = parentTx.entityManager();
 			this.tx = parentTx.entityTransaction();
@@ -159,6 +166,7 @@ public class HibernateTxImpl implements HibernateTx {
 			log.debug((this.parentTx == null ? "Root" : this.parentTx.txId()) + " Tx " + txId() + " closing on " + Thread.currentThread().getName() + " at " + System.currentTimeMillis());
 		}
 		if (!isNested()) {
+			Timer.Sample sample = Timer.start();
 			try {
 				if (isSuccess) {
 					executeDeferred();
@@ -183,6 +191,9 @@ public class HibernateTxImpl implements HibernateTx {
 					throw new RuntimeException(t);
 				}
 			} finally {
+				if (commitTimer != null) {
+					sample.stop(commitTimer);
+				}
 				Tx.setActive(parentTx);
 				deferredActions.clear();
 				if (em.isOpen()) {
