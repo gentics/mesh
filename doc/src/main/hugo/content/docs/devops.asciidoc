@@ -20,7 +20,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=mesh
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -Dstorage.diskCache.bufferSize=256 -jar /opt/mesh-website-server/mesh-server.jar
+ExecStart=/usr/bin/java -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m -jar /opt/mesh-website-server/mesh-server.jar
 WorkingDirectory=/opt/mesh-website-server
 
 LimitMEMLOCK=infinity
@@ -48,7 +48,6 @@ Environment=MESH_AUTH_KEYSTORE_PASS=YOUR_KEYSTORE_PW
 # ES
 Environment=MESH_ELASTICSEARCH_URL=http://localhost:9200
 Environment=MESH_ELASTICSEARCH_PREFIX=website
-Environment=MESH_ELASTICSEARCH_START_EMBEDDED=false
 
 # Monitoring
 Environment=MESH_MONITORING_ENABLED=false
@@ -67,11 +66,8 @@ Environment=MESH_CLUSTER_INIT=false
 
 # Paths
 Environment=MESH_AUTH_KEYSTORE_PATH=/opt/mesh-website-server/keystore
-Environment=MESH_GRAPH_EXPORT_DIRECTORY=/opt/mesh-website-server/exports
-Environment=MESH_GRAPH_BACKUP_DIRECTORY=/opt/mesh-website-server/backups
 Environment=MESH_BINARY_DIR=/opt/mesh-website-server/uploads
 Environment=MESH_TEMP_DIR=/opt/mesh-website-server/temp
-Environment=MESH_GRAPH_DB_DIRECTORY=/opt/mesh-website-server/graphdb
 Environment=MESH_BINARY_UPLOAD_TEMP_DIR=/opt/mesh-website-server/temp
 Environment=MESH_INITIAL_ADMIN_PASSWORD=admin
 

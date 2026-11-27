@@ -106,7 +106,7 @@ Please note that an access to the Gentics' commercial repository is required to 
 [source,yaml]
 ----
   mesh:
-    image: docker.gentics.com/gentics/mesh-postgres
+    image: docker.gentics.com/gentics/mesh-enterprise-postgres
     volumes:
       - mesh-uploads:/uploads
       - /whatever/path/you/chose/for/the/postgresql-X.Y.Z.jar:/mesh/database/postgres.jar
@@ -118,7 +118,6 @@ Please note that an access to the Gentics' commercial repository is required to 
       MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
       MESH_JDBC_CONNECTION_PASSWORD: "admin"
 ---- 
-The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-postgres`.
 
 The backup/restore documentation is available at https://www.postgresql.org/docs/current/backup.html[the official PostgreSQL website].
 
@@ -177,7 +176,7 @@ Please note that an access to the Gentics' commercial repository is required to 
 [source,yaml]
 ----
   mesh:
-    image: docker.gentics.com/gentics/mesh-mssql
+    image: docker.gentics.com/gentics/mesh-enterprise-mssql
     volumes:
       - mesh-uploads:/uploads
       - /whatever/path/you/chose/for/the/mssql-jdbc-X.Y.Z.jre11.jar:/mesh/database/mssql.jar
@@ -189,7 +188,6 @@ Please note that an access to the Gentics' commercial repository is required to 
       MESH_JDBC_CONNECTION_USERNAME: "SA"
       MESH_JDBC_CONNECTION_PASSWORD: "admin"
 ---- 
-The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-mssql`.
 
 The backup/restore documentation is available at https://learn.microsoft.com/en-us/sql/relational-databases/backup-restore/back-up-and-restore-of-sql-server-databases?view=sql-server-ver16[the official Microsoft SQL Server website].
 
@@ -252,7 +250,7 @@ Please note that an access to the Gentics' commercial repository is required to 
 [source,yaml]
 ----
   mesh:
-    image: docker.gentics.com/gentics/mesh-oracle
+    image: docker.gentics.com/gentics/mesh-enterprise-oracle
     volumes:
       - mesh-uploads:/uploads
       - /whatever/path/you/chose/for/the/ojdbc11.jar:/mesh/database/oracle.jar
@@ -264,6 +262,5 @@ Please note that an access to the Gentics' commercial repository is required to 
       MESH_JDBC_CONNECTION_USERNAME: "meshdbuser"
       MESH_JDBC_CONNECTION_PASSWORD: "admin"
 ---- 
-The Enterprise Edition image of Gentics Mesh is available with the name `docker.gentics.com/gentics/mesh-enterprise-oracle`.
 
 The backup/restore documentation is available at https://docs.oracle.com/en/engineered-systems/oracle-database-appliance/19.26/cmtxn/backup-recover-restore.html[the official Oracle website].

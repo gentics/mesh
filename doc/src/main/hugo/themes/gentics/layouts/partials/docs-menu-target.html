@@ -1,0 +1,23 @@
+{{- /*
+  Resolves a docs menu url (data/docsmenu.yaml) and stores the results in the given scratch,
+  since partials cannot return values in this Hugo version (0.54).
+  Params: dict "url" <url> "s" <scratch>
+  Sets  "href":   link target, "/docs/<url>" for urls relative to /docs/, else the url as is
+        "target": page path the url points to without anchor, e.g. "/docs/events/"; "" for external urls
+*/ -}}
+{{- $url := .url -}}
+{{- if or (hasPrefix $url "/") (hasPrefix $url "http") -}}
+    {{- .s.Set "href" $url -}}
+{{- else -}}
+    {{- .s.Set "href" (printf "/docs/%s" $url) -}}
+{{- end -}}
+{{- if hasPrefix $url "http" -}}
+    {{- .s.Set "target" "" -}}
+{{- else -}}
+    {{- $path := strings.TrimSuffix "/" (index (split $url "#") 0) -}}
+    {{- if hasPrefix $path "/" -}}
+        {{- .s.Set "target" (printf "%s/" $path) -}}
+    {{- else -}}
+        {{- .s.Set "target" (printf "/docs/%s/" $path) -}}
+    {{- end -}}
+{{- end -}}

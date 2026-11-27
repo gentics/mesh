@@ -12,9 +12,9 @@ You can now implement two different methods to extend the REST API at different 
 
 == Global Routes
 
-You can hook your plugin routes to the `/api/v1/plugins` endpoint.
+You can hook your plugin routes to the `{apiLatest}/plugins` endpoint.
 
-Implementing the `createGlobalRouter` method as shown below would add the `/api/v1/plugins/hello-world/hello` endpoint for the plugin with the `hello-world` restApiName.
+Implementing the `createGlobalRouter` method as shown below would add the `{apiLatest}/plugins/hello-world/hello` endpoint for the plugin with the `hello-world` restApiName.
 
 [source,java]
 ----
@@ -34,9 +34,9 @@ NOTE: The method `createGlobalRouter` will be invoked multiple times in order to
 
 == Project Routes
 
-Additionally you can also hook your plugin routes to the `/api/v1/:projectName/plugins` endpoint.
+Additionally you can also hook your plugin routes to the `{apiLatest}/:projectName/plugins` endpoint.
 
-Implementing the `createProjectRouter` method as shown below would add the `/api/v1/:projectName/plugins/hello-world/hello-project` endpoint for the plugin to all projects.
+Implementing the `createProjectRouter` method as shown below would add the `{apiLatest}/:projectName/plugins/hello-world/hello-project` endpoint for the plugin to all projects.
 
 [source,java]
 ----

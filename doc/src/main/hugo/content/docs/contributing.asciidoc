@@ -130,26 +130,18 @@ GET {apiLatest}/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 
 Each class for REST Endpoint  (e.g. NodeEndpoint) also usually has a dedicated CRUDHandler which provides the actual code which processes the request.
 For the NodeEndpoint this would be the `NodeCrudHandler`. The `NodeCrudHandler#handleRead` method accepts the request and processes it.
-The CRUDHandler loads the data object which is used to aggregate the elements. 
-
-In order to load nodes the `RootVertex` would be the `NodeRoot` which is connected to the `Project` vertex which has been loaded before within the ProjectRouter.
+The CRUDHandler delegates the data access to the DAO actions (for nodes: `NodeDAOActionsImpl`), which use the DAO of the current transaction (`tx.nodeDao()`).
 
 Next the selected element will be:
 
-* loaded using the `NodeRoot` and the given `uuid`
+* loaded via `NodeDao#loadObjectByUuid` within the project which has been loaded before within the ProjectRouter, using the given `uuid`
 * checked against needed permissions
-* transformed to JSON via the `Node#transformToRestSync` method
+* transformed to JSON via the `NodeDao#transformToRestSync` method
 
 == Domain Model
 
-We already hinted that Projects and Nodes are vertices. In fact all elements in Gentics Mesh are models within a Graph Model. 
-The graph has a root element which is used as an entry point for Gentics Mesh.
-During startup this vertex will be loaded and all further interacts will use this vertex to load more and more of the graph.
-References to some of these vertices will be kept in memory to speed things up.
-
-The graph structure is documented within this interactive https://portal.graphgist.org/graph_gists/6c8712b8-d741-45f9-beb4-84ebca278bfa[graph gist].
-
-NOTE: The gist may be a bit outdated in some places but the general structure is still valid.
+All elements of Gentics Mesh are entities which are mapped to the relational database via Hibernate ORM.
+The DAO interfaces (e.g. `NodeDao`) are defined in `mdm/api`; the Hibernate based implementations (e.g. `NodeDaoImpl`) and the entity classes (e.g. `HibNodeImpl`) are located in `mdm/hibernate-core`.
 
 == Database handling
 
@@ -165,15 +157,19 @@ The single remote database is used for both single instance and clustered modes.
 | Name                        | Description
 | mesh-api                    | Contains API classes like Configuration POJOs and constants.
 | mesh-core                   | Contains the data model and the main codebase
-| mesh-database-connectors    | Contains the database connectors code
-| mesh-demo                   | Contains the Gentics Demo which can be run via the `DemoRunner` main class.
+| mesh-database-connectors    | Contains the database connectors code (`connectors`: HSQLDB and MariaDB).
 | mesh-rest-client            | Contains the Vert.x based REST client.
 | mesh-rest-model             | Contains the POJOs for the REST API models.
-| mesh-doc                    | Contains sources for the getmesh.io documentation and tools to generate tables and examples from sources.             
+| mesh-doc                    | Contains sources for the Gentics Mesh documentation and tools to generate tables and examples from sources.
 | mesh-server                 | Contains the Gentics Mesh server which can be run via `ServerRunner` main class.
 | mesh-mdm                    | Contains an abstraction over multi-database management API (aka Multi Database Mesh).
 | mesh-mdm-hibernate          | Contains the ORM related abstractions, in separate API and implementation submodules.
 | mesh-distributed            | Contains code which take care of event handling and event processing in an cluster environment.
+| mesh-distributed-coordinator | Contains the election of the master instance in a cluster (`distributed-coordinator`).
+| mesh-content-rag-parent     | Contains the Content RAG integration: the sync into Elasticsearch and the RAG service (`content-rag`).
+| mesh-mcp-server             | Contains the Model Context Protocol server for Gentics Mesh (`mcp-server`).
+| mesh-enterprise             | Contains the Enterprise modules, licensed under the Business Source License 1.1 (`ee`): Enterprise database connectors, Enterprise plugins and the Enterprise Helm chart.
+| mesh-commercial-plugins     | Contains the Gentics Mesh plugins (`plugins`).
 | mesh-service-local-storage  | Contains code for the binary storage system which stores data locally on disk.
 | mesh-graphql                | Contains code for the GraphQL endpoint and GraphQL types.
 | mesh-service-image-imgscalr | Contains an image resizer implementation based on https://github.com/rkalla/imgscalr[imgscalr].

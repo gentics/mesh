@@ -155,39 +155,6 @@ public interface Database extends TxFactory {
 	ClusterManager clusterManager();
 
 	/**
-	 * Create a database export.
-	 * 
-	 * @param outputDirectory
-	 * @throws IOException
-	 */
-	void exportDatabase(String outputDirectory) throws IOException;
-
-	/**
-	 * Import an database export
-	 * 
-	 * @param importFile
-	 * @throws IOException
-	 */
-	void importDatabase(String importFile) throws IOException;
-
-	/**
-	 * Create a database backup.
-	 * 
-	 * @param backupDirectory
-	 * @throws IOException
-	 * @return The path of the created backup file.
-	 */
-	String backupDatabase(String backupDirectory) throws IOException;
-
-	/**
-	 * Restore a previously created database backup.
-	 * 
-	 * @param backupFile
-	 * @throws IOException
-	 */
-	void restoreDatabase(String backupFile) throws IOException;
-
-	/**
 	 * Generate the database revision change by generating a hash over all database changes and the database vendor version.
 	 * 
 	 * @return

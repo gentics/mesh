@@ -1,10 +1,10 @@
 package com.gentics.mesh.database;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.metric.SimpleMetric.NO_TX;
 import static com.gentics.mesh.metric.SimpleMetric.TX;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -59,6 +59,7 @@ import com.gentics.mesh.liquibase.LiquibaseLogService;
 import com.gentics.mesh.liquibase.LiquibaseStartupContext;
 import com.gentics.mesh.liquibase.LiquibaseUIService;
 import com.gentics.mesh.metric.MetricsService;
+import com.gentics.mesh.metric.SimpleMetric;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.micrometer.MicrometerMetricsTrackerFactory;
 
@@ -93,6 +94,7 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 	private final WriteLock writeLock;
 	private final HibClusterManager clusterManager;
 	private final Counter txCounter;
+	private final Counter noTxCounter;
 	private final LiquibaseConnectionProvider liquibaseConnectionProvider;
 	private final ContentCachedStorage cachedStorage;
 	private final DatabaseConnector databaseConnector;
@@ -115,6 +117,7 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 		this.databaseProvider = new DefaultSQLDatabase(this.options, this.databaseConnector);
 		this.clusterManager = clusterManager;
 		this.txCounter = metrics.counter(TX);
+		this.noTxCounter = metrics.counter(NO_TX);
 		this.cachedStorage = cachedStorage;
 	}
 
@@ -217,26 +220,6 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public void exportDatabase(String outputDirectory) throws IOException {
-		throw new IllegalStateException("Not implemented. Please use export function of your DB vendor");
-	}
-
-	@Override
-	public void importDatabase(String importFile) throws IOException {
-		throw new IllegalStateException("Not implemented. Please use import function of your DB vendor");
-	}
-
-	@Override
-	public String backupDatabase(String backupDirectory) throws IOException {
-		throw new IllegalStateException("Not implemented. Please use backup function of your DB vendor");
-	}
-
-	@Override
-	public void restoreDatabase(String backupFile) throws IOException {
-		throw new IllegalStateException("Not implemented. Please use restore function of your DB vendor");
 	}
 
 	@Override
@@ -451,6 +434,9 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
 
 	@Override
 	public void reload(HibElement element) {
+		if (metrics.isEnabled()) {
+			metrics.counter(SimpleMetric.GRAPH_ELEMENT_RELOAD).increment();
+		}
 		HibernateTx.get().entityManager().refresh(element, LockModeType.PESSIMISTIC_READ);
 	}
 
@@ -503,7 +489,11 @@ public class HibernateDatabase extends CommonDatabase implements Database, Seria
         if (StringUtils.isNotBlank(storageOptions.getConnectionPassword())) {
             info.put("password", storageOptions.getConnectionPassword());
         }
-		return driver.connect(databaseConnector.getConnectionUrl(), info);
+		Connection noTx = driver.connect(databaseConnector.getConnectionUrl(), info);
+		if (metrics.isEnabled()) {
+			noTxCounter.increment();
+		}
+		return noTx;
 	}
 
 	/**

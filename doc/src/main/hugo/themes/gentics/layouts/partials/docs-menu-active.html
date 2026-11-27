@@ -1,0 +1,17 @@
+{{- /*
+  Checks whether a docs menu section (data/docsmenu.yaml) contains the current page, i.e. whether
+  the section url or one of its entries (two levels) points to it.
+  Stores the result in the given scratch, since partials cannot return values in Hugo 0.54.
+  Params: dict "section" <section> "cur" <RelPermalink of the current page> "s" <scratch>
+  Sets  "active": true | false
+*/ -}}
+{{- $urls := slice -}}
+{{- with .section.url }}{{ $urls = $urls | append . }}{{ end -}}
+{{- range .section.items }}{{ $urls = $urls | append .url }}{{ range .items }}{{ $urls = $urls | append .url }}{{ end }}{{ end -}}
+{{- $active := false -}}
+{{- $t := newScratch -}}
+{{- range $urls -}}
+    {{- partial "docs-menu-target.html" (dict "url" . "s" $t) -}}
+    {{- if and (ne ($t.Get "target") "") (strings.HasSuffix $.cur ($t.Get "target")) }}{{ $active = true }}{{ end -}}
+{{- end -}}
+{{- .s.Set "active" $active -}}

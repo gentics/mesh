@@ -8,23 +8,11 @@
         </div>
     </div>
 </div>
-<div class="topsection-wrapper-white">
-    <div class="col-md-12">
-        <ul class="nav navbar-nav">
-            <li>
-                <a href="../docs/getting-started">Getting Started</a>
-            </li>
-            <li>
-                <a href="../docs/api">API</a>
-            </li>
-            <li>
-                <a href="../docs/changelog">Changelog</a>
-            </li>
-            <li>
-                <a href="../docs/lts-changelog">LTS Changelog</a>
-            </li>
-        </ul>
+<div class="docs-layout">
+    {{ partial "docs-menu.html" . }}
+    <div class="docs-main container-fluid docs-content">
+        {{ partial "docs-breadcrumb.html" . }}
+        {{ .Content }}
     </div>
 </div>
-{{ .Content }}
 {{end}}

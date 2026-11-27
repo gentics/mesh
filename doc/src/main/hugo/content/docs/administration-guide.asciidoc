@@ -9,11 +9,11 @@ include::content/docs/variables.adoc-include[]
 [options="header"]
 |======
 | Component                                                    | Type                 | Version
-| https://docs.jboss.org/hibernate/orm/6.5/introduction/html_single/Hibernate_Introduction.html[Hibernate]                              | ORM       | 6.5.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.1.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 4.5.x
-| https://hazelcast.com/[Hazelcast]                            | Cluster management | 3.12.x
-| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.11.x
+| https://hibernate.org/orm/[Hibernate]                         | ORM                  | 7.4.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 6.8.1, 7.4.0, 8.14.1, 9.1.7 (tested versions, see link:{{< relref "elasticsearch.asciidoc" >}}#_compatibility[Compatibility])
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 5.1.x
+| https://hazelcast.com/[Hazelcast]                            | Cluster management | 5.7.x
+| https://google.github.io/dagger/[Dagger 2]                   | Dependency Injection | 2.56.x
 |======
 
 == Run with Docker
@@ -161,7 +161,7 @@ java -cp mariadb-java-client-3.1.2.jar:mesh-database-connector-mariadb-X.X.X.jar
 java -cp mariadb-java-client-3.1.2.jar;mesh-database-connector-mariadb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
-NOTE: If using Mesh Enterprise Edition, replace `com.gentics.mesh.server.ServerRunner` with `com.gentics.mesh.enterprise.server.ServerRunner` in the lines above.
+NOTE: The Enterprise Edition uses the same main class `com.gentics.mesh.server.ServerRunner`. Replace the MariaDB connector and driver in the lines above with an Enterprise database connector (e.g. `mesh-enterprise-database-connector-postgres-X.X.X.jar`) and the matching JDBC driver. The Enterprise modules are located in the `ee/` directory of the source repository and are licensed under the Business Source License 1.1 (see <<_license>>).
 
 On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the `mesh.yml` configuration file. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
@@ -199,9 +199,7 @@ The folder ```binaryFiles``` contains all media assets of your projects includin
 
 NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
 
-The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
-
-The ```elasticsearch``` folder contains the included Elasticsearch installation which will be started by default.
+The keystore file, by default, is named ```keystore.jceks```. The Docker images use ```/keystore/keystore.jks``` instead (see <<_volumes_locations>>). On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
 
 == System Requirements
 
@@ -218,7 +216,7 @@ Production servers must be run on Linux. Work on Windows is neither guaranteed n
 
 === Client Requirements
 
-The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
+The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with the latest versions of any "modern" browser, e.g. Chrome, Edge, Firefox, and Safari.
 
 [[env]]
 == Environment Variables
@@ -320,6 +318,19 @@ include::content/docs/examples/tables/DebugInfoOptions.adoc-include[]
 
 include::content/docs/examples/tables/GraphQLOptions.adoc-include[]
 
+=== OpenAPI Options
+
+The OpenAPI specification is served under the `/openapi*` endpoints as long as the top-level flag `serveOpenApi` (Env: `MESH_SERVE_OPENAPI`, default `true`) is set. The generation is controlled by the `openApi` section of the `mesh.yml`.
+
+[options="header"]
+|======
+| Configuration                  | Type    | Default | Environment Variable           | Description
+| ```openApi.excludePlugins```   | Flag    | true    | `MESH_OPENAPI_EXCLUDE_PLUGINS` | Should the endpoints of the included plugins be excluded from the OpenAPI specification generation requests.
+| ```openApi.noApiInfoPlugins``` | String  | -       | `MESH_OPENAPI_NO_INFO_PLUGINS` | Comma separated list of plugins that should provide no API info.
+| ```openApi.defaultVersion```   | String  | V30     | `MESH_OPENAPI_DEFAULT_VERSION` | Default OpenAPI specification version. Possible values: `V30`, `V31`.
+| ```openApi.defaultFormat```    | String  | YAML    | `MESH_OPENAPI_DEFAULT_FORMAT`  | Default OpenAPI specification format. Possible values: `YAML`, `JSON`.
+|======
+
 === S3 Storage Options
 
 include::content/docs/examples/tables/S3Options.adoc-include[]
@@ -339,7 +350,7 @@ Memory settings can be defined using the `JAVA_TOOL_OPTIONS` environment variabl
 | `-XX:MaxDirectMemorySize`         | Maximum direct memory limit. Direct memory is mostly used for IO buffers.
 |======
 
-The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + `disk cache` + (`stack size` * `thread count`) + `256 MB (JVM base memory)`.
+The total amount of required memory is the roughly sum of `heap memory` + `direct memory` + (`stack size` * `thread count`) + `256 MB (JVM base memory)`.
 
 ==== Recommendations (Single Node)
 
@@ -348,11 +359,11 @@ The following numbers serve the purpose to roughly estimate the memory requireme
 [options="header"]
 |======
 | Node Count           | Memory Setting
-| 0 to 100             | `-Xms128m -Xmx128m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=128`
-| 100 to 1_000         | `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=256`
-| 1_000 to 10_000      | `-Xms786m -Xmx786m -XX:MaxDirectMemorySize=128m  -Dstorage.diskCache.bufferSize=384`
-| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=512`
-| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=128m -Dstorage.diskCache.bufferSize=1024`
+| 0 to 100             | `-Xms128m -Xmx128m -XX:MaxDirectMemorySize=128m`
+| 100 to 1_000         | `-Xms512m -Xmx512m -XX:MaxDirectMemorySize=128m`
+| 1_000 to 10_000      | `-Xms786m -Xmx786m -XX:MaxDirectMemorySize=128m`
+| 10_000 to 100_000    | `-Xms1250m -Xmx1250m -XX:MaxDirectMemorySize=128m`
+| 100_000 to 1_000_000 | `-Xms2500m -Xmx2500m -XX:MaxDirectMemorySize=128m`
 |======
 
 ==== Recommendations (Clustered Node)
@@ -362,11 +373,11 @@ The following numbers serve the purpose to roughly estimate the memory requireme
 [options="header"]
 |======
 | Node Count           | Memory Setting
-| 0 to 100             | `-Xms1124m -Xmx1124m -Xss1m -XX:MaxDirectMemorySize=628m  -Dstorage.diskCache.bufferSize=628`
-| 100 to 1_000         | `-Xms1512m -Xmx1512m -Xss2m -XX:MaxDirectMemorySize=856m  -Dstorage.diskCache.bufferSize=856`
-| 1_000 to 10_000      | `-Xms1786m -Xmx1786m -Xss2m -XX:MaxDirectMemorySize=984m  -Dstorage.diskCache.bufferSize=984`
-| 10_000 to 100_000    | `-Xms2250m -Xmx2250m -Xss2m -XX:MaxDirectMemorySize=1024m  -Dstorage.diskCache.bufferSize=1024`
-| 100_000 to 1_000_000 | `-Xms3500m -Xmx3500m -Xss4m -XX:MaxDirectMemorySize=2048m -Dstorage.diskCache.bufferSize=2048`
+| 0 to 100             | `-Xms1124m -Xmx1124m -Xss1m -XX:MaxDirectMemorySize=628m`
+| 100 to 1_000         | `-Xms1512m -Xmx1512m -Xss2m -XX:MaxDirectMemorySize=856m`
+| 1_000 to 10_000      | `-Xms1786m -Xmx1786m -Xss2m -XX:MaxDirectMemorySize=984m`
+| 10_000 to 100_000    | `-Xms2250m -Xmx2250m -Xss2m -XX:MaxDirectMemorySize=1024m`
+| 100_000 to 1_000_000 | `-Xms3500m -Xmx3500m -Xss4m -XX:MaxDirectMemorySize=2048m`
 |======
 
 == Admin Access
@@ -385,14 +396,14 @@ NOTE: The admin access can be restored via the use of the `resetAdminPassword` l
 There are currently fours components which can be included in a backup:
 
 * *Database* - The database contains the main content of Gentics Mesh.
-    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../../plugins-features/premium-db[premium DB documentation] is a good place to start looking.
+    The backup process of a database depends on an actual RDBMS (MariaDB, HSQLDB etc...) used, and is _not_ a part of Gentics Mesh. In the case of MariaDB, please refer to the https://mariadb.com/kb/en/backup-and-restore-overview/[official backup/restore documentation]. For all the other cases, a link:../premium-features/premium-db[premium DB documentation] is a good place to start looking.
 
 * *Binary files* - Binaries are currently stored in the filesystem and need to be backed up separately data/binaryFiles)
 
 * *Elasticsearch Index* - Optionally you can also backup the Elasticsearch index.
     The index can also be re-created anytime using the `POST {apiLatest}/search/sync` endpoint.
 
-* *Configuration* - The Gentics Mesh configuration files should be part of a backup. Especially the `keystore.jks` file is important since it contains the cryptographic keys which are needed to authenticate issued tokens which includes also the API key.
+* *Configuration* - The Gentics Mesh configuration files should be part of a backup. Especially the keystore file (`keystore.jceks` by default, `keystore.jks` in the Docker images) is important since it contains the cryptographic keys which are needed to authenticate issued tokens which includes also the API key.
                     The `mesh.yaml` file contains the autogenerated password for the keystore file. The keystore file and the password to open it are required by Gentics Mesh to authenticate tokens.
 
 [[debuginfo]]
@@ -402,13 +413,18 @@ The debug info endpoint `GET {apiLatest}/admin/debuginfo` starts a zip download 
 
 The documentation below lists all files that are included in the zip.
 
-Per default everything except the consistency check is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
+Per default everything except the consistency check and the backup is included in the zip. You can use the `?include` query parameter to include or exclude specific parts.
 For example `{apiLatest}/admin/debuginfo?include=-log,consistencyCheck` will exclude application logs and include the consistency checks.
 
 === Active Config
 Query name: `activeConfig`
 
 The effective link:{{< relref "administration-guide.asciidoc" >}}#conf[configuration] that is currently used in the system. This includes overrides by command line argument and environment variables.
+
+=== Backup
+Query name: `backup`
+
+Not included by default. With the currently supported relational databases Gentics Mesh does not create database backups, so this part adds no content to the zip. See <<_backup_recovery>> for backing up the database.
 
 === Binary Disk Usage
 Query name: `binaryDiskUsage`
@@ -439,6 +455,11 @@ Includes the following entities as json:
 - All Microschemas
 - All Projects
 - All Branches
+
+=== Local Config
+Query name: `localConfig`
+
+The currently active local configuration (`localConfig.json`), i.e. the settings that can be changed at runtime via the link:../api/#admin_config_get[`{apiLatest}/admin/config`] endpoint (currently the <<readonly,read only mode>>).
 
 === Log
 Query name: `log`
@@ -538,5 +559,5 @@ include::content/docs/api/response{apiLatest}/admin/consistency/repair/200/examp
 
 == License
 
-* Gentics Mesh is published under Apache 2.0 license.
+* Gentics Mesh uses an open-core licensing model: the core is published under the Apache 2.0 license, the Enterprise modules in the `ee/` directory (Enterprise database connectors for PostgreSQL, Microsoft SQL Server and Oracle, the Keycloak, search and favorite plugins, the Enterprise Helm chart) are published under the Business Source License 1.1. Production use of the Enterprise modules requires a commercial license. See the `LICENSING.md` file in the root of the source repository for details.
 * https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].

@@ -246,6 +246,27 @@ rag:
     live-permission-check: false
 ----
 
+The following settings of the bundled `application.yml` can be overridden by environment variables:
+
+[options="header"]
+|===
+| Environment variable | Setting | Default
+
+| `ES_URL` | `rag.elasticsearch.url` | `http://localhost:9200`
+| `ES_INDEX_PREFIX` | `rag.elasticsearch.index-prefix` | `mesh`
+| `TEI_URL` | `rag.inference.url` (without the `/embed` suffix) | `http://localhost:8081`
+| `TEI_API_KEY` | `rag.inference.api-key` | empty
+| `MESH_URL` | `rag.mesh.url` | `http://localhost:8080`
+| `RAG_ALLOW_ANONYMOUS` | `rag.auth.allow-anonymous` | `true`
+| `LLM_MODEL` | `rag.llm.model` | `eu-managed-llm`
+| `LLM_ENDPOINT` | `rag.llm.endpoint` | empty
+| `LLM_API_KEY` | `rag.llm.api-key` | empty
+|===
+
+The index prefix of the service has to match the `search.prefix` setting of Gentics Mesh (default `mesh-`), since the RAG indices live next to the node indices in the same Elasticsearch.
+The service appends a missing trailing `-` to the prefix, so its default `mesh` results in the same index names as the Gentics Mesh default `mesh-`.
+When changing the prefix, use a lower case value ending with `-`; the initialization of the RAG sync in Gentics Mesh fails with an error if both sides would normalize the prefix differently.
+
 `inference.dimension` has to match the model behind the endpoint; the default configuration assumes a multilingual model with 384 dimensions.
 `bootstrap: false` skips creating endpoint, pipeline and template and assumes they already exist.
 

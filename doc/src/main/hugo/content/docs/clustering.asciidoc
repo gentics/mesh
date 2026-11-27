@@ -6,11 +6,11 @@ include::content/docs/variables.adoc-include[]
 
 == Basics
 
-It is possible to run Gentics Mesh in a cluster mode. This means the data will be served through load-balanced set of Mesh instances. 
-Binary data (uploads) are currently not being handled by our cluster implementation and need dedicated handling.
+It is possible to run Gentics Mesh in a cluster mode. This means the data will be served through load-balanced set of Mesh instances.
+All instances share one common relational database. Binary data of regular `binary` fields (uploads) is stored in the filesystem and needs dedicated handling (see <<_handling_binary_data>>).
 
-At its core Gentics Mesh makes use of the Hazelcast cluster manager, which allows run multiple instances in a master-master mode.
-This means that each instance is able to receive data which is in turn automatically being distributed to other instances.
+At its core Gentics Mesh makes use of the Hazelcast cluster manager, which is used to exchange events and cache invalidations between the instances.
+Each instance is able to receive read and write requests.
 
 Clustering is also a way to increase redundancy and fault tolerance since each instance can still run independently in case of a network failure or hardware fault of other instances.
 
@@ -55,14 +55,12 @@ Clustering involves the following components: Vert.x, Hazelcast. Each component 
 
 * Initial setup
 
-If you have not yet run Gentics Mesh with clustering mode disabled you need to setup a database first. You can either start Gentics Mesh in single mode and stop it and start it again in clustering mode or start Gentics Mesh directly using the `-initCluster` command line argument.
-Similar to the first time when you start Gentics Mesh in single mode a new data directory will be created for you. The only difference is that new instances will be able to connect to your instance right away.
+All instances of a cluster connect to the same relational database (see link:{{< relref "administration-guide.asciidoc" >}}#_storage_options[Storage Options]).
+The first instance which is started against an empty database creates the initial data (admin user, default schemas, etc.), exactly like a single instance would.
 
-* Adding slaves
+* Adding instances
 
-If you have not yet setup a database and just start Gentics Mesh with clustering enabled not much will happen. It will wait for other instances in the cluster which can provide a database for it.
-
-You can start up additional instances once your initial cluster instance is up and running.
+Additional instances can be started at any time. They connect to the same database and join the cluster via Hazelcast.
 
 * Enable clustering on an non-clustered instance
 
@@ -120,13 +118,15 @@ Each instance of Gentics Mesh is able to validate the JWT by using the crypograp
 
 == Elasticsearch
 
-Note that the Elasticsearch needs to be clustered dedicatedly. This can be achieved by running a configured dedicated instance or by configuring the instance that is started by Gentics Mesh.
+Note that the Elasticsearch needs to be clustered dedicatedly. This can be achieved by running a configured dedicated instance.
 Please refer to the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/discovery-settings.html[Elasticsearch documentation].
 
 == Handling binary data
 
-File uploads are currently not automatically being distributed. This means that it is required to share the data of the upload directory manually.
-One option would be to use a link:https://en.wikipedia.org/wiki/List_of_file_systems#Distributed_file_systems[distributed file system] like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS], link:https://en.wikipedia.org/wiki/Amazon_S3[S3] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
+Binaries of `s3binary` fields are stored in an S3 bucket (see link:{{< relref "administration-guide.asciidoc" >}}#_s3_storage_options[S3 Storage Options]) and are therefore available to all instances without further setup.
+
+Binaries of regular `binary` fields are stored in the local upload directory and are not automatically being distributed. This means that it is required to share the data of the upload directory manually.
+One option would be to use a link:https://en.wikipedia.org/wiki/List_of_file_systems#Distributed_file_systems[distributed file system] like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
 The only directory which needs to be shared across the cluster is the upload directory which can be configured in the `mesh.yml` file.
 
 .mesh.yml
@@ -138,20 +138,9 @@ upload:
 
 == Cluster Coordination
 
-A cluster request coordinator can be enabled to add a coordination layer in each Gentics Mesh instance.
-
-This layer will automatically delegate requests to an elected master instance.
-
-This process is useful when running a multi-master or master-replica setup.
-
-In a multi-master setup the write requests on all instances will be directed to an elected master instance.
-This is useful in order to reduce contention and to avoid synchronization issues.
-
-In a master-replica setup this can be useful to delegate write requests on replica instances to the elected master instance.
-
-=== Configuration
-
-By default the coordination layer is disabled and first needs to be enabled in the cluster settings.
+When clustering is enabled, the instances elect one master instance among themselves.
+Requests are not forwarded to the master; every instance handles its requests itself.
+The periodic processing of queued jobs (see the `migrationTriggerInterval` setting) is only triggered on the master, and schema, microschema and branch migrations are only executed on the master; on other instances they are aborted.
 
 === Master Election
 
@@ -161,13 +150,7 @@ Example: The regex `gentics-mesh-[0-9]` would only match nodes `gentics-mesh-0`,
 
 A new master will automatically be elected whenever the master instance is no longer online.
 
-NOTE: Only instances which provide a master database can be elected. Replica servers are not eligible.
-
-=== Headers
-
-Delegation can be disabled for individual requests when adding the `X-Mesh-Direct: true` header to the request.
-
-If a request was delegated, the `X-Mesh-Forwarded-From` will be added to the response. The value of this header is the name of the node from which the request was forwarded from.
+The current master can be retrieved via `GET {apiLatest}/admin/coordinator/master`. Invoking `POST {apiLatest}/admin/coordinator/master` on an eligible instance makes this instance the master.
 
 == Transaction handling / Change propagation
 
@@ -186,7 +169,7 @@ You can rollback as long as you still have instances which have not yet been mig
 
 == AWS / GCE
 
-There is currently no built-in support for these platforms.
+There is no built-in node discovery for these platforms. Binaries can be stored in AWS S3 via `s3binary` fields (see <<_handling_binary_data>>).
 
 == Scaling
 
@@ -223,8 +206,8 @@ The `{apiLatest}/admin/cluster/status` endpoint can be used to retrieve informat
 
 == Limitations
 
-* Binary data (uploads) are currently not automatically being distributed to other nodes.
-  You may use a clustering filesystem or NFS to share this data.
+* Binary data of regular `binary` fields (uploads) is not automatically being distributed to other nodes.
+  You may use a clustering filesystem or NFS to share this data, or use `s3binary` fields instead.
 * All cluster instances must use the same Gentics Mesh version.
   Checks have been added to prevent instances from joining a cluster if the Gentics Mesh version does not match up. 
 * It is currently not possible to configure network bind host and different network host announce host.

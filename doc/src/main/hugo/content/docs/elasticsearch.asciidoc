@@ -58,7 +58,7 @@ search:
   timeout: 8000
 ----
 
-include::content/docs/snippets/config/search.inc[]
+include::content/docs/examples/tables/ElasticSearchOptions.adoc-include[]
 
 The `search.url` parameter must point to the Elasticsearch installation that you want to use.
 
@@ -72,7 +72,7 @@ TIP: You can add Elasticsearch support at any point and invoke ```POST {apiLates
 
 == Compatibility
 
-We currently run and test against Elasticsearch version 6.8.1 and 9.0.0. Other versions have not yet been tested.
+We currently run and test against Elasticsearch versions 6.8.1, 7.4.0, 8.14.1 and 9.1.7. Other versions have not yet been tested.
 
 The `search.complianceMode` setting or `MESH_ELASTICSEARCH_COMPLIANCE_MODE` environment variable can be used to control the compliance levels that influence Elasticsearch compatibility.
 
@@ -491,63 +491,63 @@ Gentics Mesh transforms elements into these documents which then can be stored w
 
 [source,json]
 ----
-include::content/docs/examples/search/user.search.json[]
+include::content/docs/search/user.search.json[]
 ----
 
 === Groups
 
 [source,json]
 ----
-include::content/docs/examples/search/group.search.json[]
+include::content/docs/search/group.search.json[]
 ----
 
 === Roles
 
 [source,json]
 ----
-include::content/docs/examples/search/role.search.json[]
+include::content/docs/search/role.search.json[]
 ----
 
 === Nodes
 
 [source,json]
 ----
-include::content/docs/examples/search/node.search.json[]
+include::content/docs/search/node.search.json[]
 ----
 
 === Projects
 
 [source,json]
 ----
-include::content/docs/examples/search/project.search.json[]
+include::content/docs/search/project.search.json[]
 ----
 
 === Tags
 
 [source,json]
 ----
-include::content/docs/examples/search/tag.search.json[]
+include::content/docs/search/tag.search.json[]
 ----
 
 === Tag Families
 
 [source,json]
 ----
-include::content/docs/examples/search/tagFamily.search.json[]
+include::content/docs/search/tagFamily.search.json[]
 ----
 
 === Microschemas
 
 [source,json]
 ----
-include::content/docs/examples/search/microschema.search.json[]
+include::content/docs/search/microschema.search.json[]
 ----
 
 === Schemas
 
 [source,json]
 ----
-include::content/docs/examples/search/schema.search.json[]
+include::content/docs/search/schema.search.json[]
 ----
 
 == Custom mappings / index settings

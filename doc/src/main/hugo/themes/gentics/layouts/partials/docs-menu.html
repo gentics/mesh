@@ -1,0 +1,41 @@
+{{- /*
+  Docs side menu from data/docsmenu.yaml (left column of the docs layout).
+  The section containing the current page is opened and highlighted.
+  Param: the current page
+*/ -}}
+{{- $cur := .RelPermalink -}}
+{{- $s := newScratch }}
+<nav id="docs-menu" class="docs-menu collapse" aria-label="Documentation">
+    <ul class="nav-list">
+    {{- range .Site.Data.docsmenu.sections }}
+        {{- partial "docs-menu-active.html" (dict "section" . "cur" $cur "s" $s) -}}
+        {{- $active := $s.Get "active" }}
+        <li class="nav-item{{ if $active }} active{{ end }}">
+        {{- if .items }}
+            <details{{ if $active }} open{{ end }}>
+                <summary class="nav-link">
+                    {{- if .url }}{{ partial "docs-menu-link.html" (dict "entry" . "cur" $cur "class" "nav-title") }}{{ else }}<span class="nav-title">{{ .title }}</span>{{ end -}}
+                    <span class="nav-caret" aria-hidden="true">›</span>
+                </summary>
+                <ul class="nav-submenu">
+                {{- range .items }}
+                    <li class="nav-item">
+                        {{- partial "docs-menu-link.html" (dict "entry" . "cur" $cur "class" "nav-link") -}}
+                        {{- with .items }}
+                        <ul class="nav-submenu">
+                            {{- range . }}
+                            <li class="nav-item">{{ partial "docs-menu-link.html" (dict "entry" . "cur" $cur "class" "nav-link") }}</li>
+                            {{- end }}
+                        </ul>
+                        {{- end }}
+                    </li>
+                {{- end }}
+                </ul>
+            </details>
+        {{- else }}
+            {{ partial "docs-menu-link.html" (dict "entry" . "cur" $cur "class" "nav-link") }}
+        {{- end }}
+        </li>
+    {{- end }}
+    </ul>
+</nav>

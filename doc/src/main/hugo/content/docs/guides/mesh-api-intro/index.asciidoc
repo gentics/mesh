@@ -47,8 +47,10 @@ We can quickly start-up a Gentics Mesh instance using Docker.
 
 [source,bash]
 ----
-docker run -p 8080:8080 --rm gentics/mesh-demo:0.33.1
+docker run -p 8080:8080 --rm gentics/mesh-hsqldb
 ----
+
+NOTE: The demo content (vehicles, categories, images) used in this guide is no longer shipped with a Docker image. The `gentics/mesh-hsqldb` image starts an empty instance with an in-memory database, so the schemas and contents referenced below have to be created first.
 
 Now lets set the base so we can reuse it in our examples:
 

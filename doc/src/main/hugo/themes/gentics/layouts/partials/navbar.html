@@ -6,6 +6,14 @@
                 <img class="logo" src="/assets/gentics-logo.png" width="101" height="28" alt="Gentics Logo" />
                 <span class="navbar-brand-text hidden-sm">{{ .Site.Title }}</span>
             </a>
+            {{- if eq .Section "docs" }}
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#docs-menu"
+                aria-controls="docs-menu" aria-expanded="false" aria-label="Open navigation">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            {{- end }}
         </div>
     </div>
     <!-- /.container-fluid -->

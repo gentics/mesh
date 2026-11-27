@@ -55,6 +55,10 @@ The healthcheck liveness probe endpoint `GET {apiLatest}/health/live` indicates 
 
 The readiness probe endpoint `GET {apiLatest}/health/ready` returns status code `200` if the server is accepting connections. This endpoint can be used to check when the server instance if ready to accept requests once it has been started. This is especially useful if you run rolling cluster upgrades.
 
+=== Writable Probe
+
+The endpoint `GET {apiLatest}/health/writable` returns status code `200` if the server instance is writable and `503` otherwise.
+
 === Status
 
 The current Gentics Mesh server status can be checked against the `GET {apiLatest}/status`.
@@ -76,6 +80,12 @@ The current Gentics Mesh server status can be checked against the `GET {apiLates
 
 | **SHUTTING_DOWN**
 | Status which indicates that the instance is shutting down.
+
+| **BACKUP**
+| Status which indicates that a blocking backup is currently running.
+
+| **RESTORE**
+| Status which indicates that a blocking restore operation is currently running.
 
 |======
 
@@ -130,7 +140,7 @@ scrape_configs:
 Gentics Mesh exposes the following metrics in addition to the default link:https://vertx.io/docs/vertx-micrometer-metrics/java/#_vert_x_core_tools_metrics[Vert.x metrics].
 More metrics will be added over time.
 
-`<cache>` is one of `permission`, `projectbranchname`, `projectname`, `webroot`.
+`<cache>` is one of `permission`, `webroot`, `totals`, `graphql_schema`, `searchmappings`, `tablecolumns`, `listablefieldvalues`, `projectname`, `projectbranchname`, `username`, `groupname`, `rolename`, `tagname`, `tagfamilyname`.
 
 [options="header",cols="2*"]
 |======
@@ -138,10 +148,10 @@ More metrics will be added over time.
 | Key
 | Description
 
-| `mesh_tx_created`
+| `mesh_tx_rate`
 | Meter which measures the rate of created transactions over time.
 
-| `mesh_notx_created`
+| `mesh_notx_rate`
 | Meter which measures the rate of created noTx transactions over time.
 
 | `mesh_graph_element_reload`
@@ -189,15 +199,9 @@ More metrics will be added over time.
 | `graphql_time`
 | Timer which tracks duration of graphql requests.
 
-| `mesh_storage_disk_total`
-| Total disk size in bytes for the storage.
-
-| `mesh_storage_disk_usable`
-| Usable (free) disk size in bytes for the storage.
-
 |======
 
 
 ### Clients
 
-The link:{{< relref "platforms.asciidoc" >}}#_clients[Monitoring Java Client] can be used to interact with the endpoints using Java.
+The link:{{< relref "platforms.asciidoc" >}}#_java[Monitoring Java Client] can be used to interact with the endpoints using Java.

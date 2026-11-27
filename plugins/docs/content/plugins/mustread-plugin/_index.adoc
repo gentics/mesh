@@ -14,10 +14,6 @@ With the must read plugin you can configure a list of nodes that are initially u
 This plugin provides endpoints to fetch all nodes that must be read and
 to set specific nodes to be already read.
 
-== Installation
-
-include::content/premium-features/_plugin_install.adoc[]
-
 == Setup
 
 Copy the jar file and the `+config+` directory into the plugin directory

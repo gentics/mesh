@@ -1,0 +1,9 @@
+{{- /*
+  Renders one docs menu link.
+  Params: dict "entry" <menu entry with title/url> "cur" <RelPermalink of the current page> "class" <css class>
+  The link is marked active when it points to the current page itself (not to an anchor in it).
+*/ -}}
+{{- $s := newScratch -}}
+{{- partial "docs-menu-target.html" (dict "url" .entry.url "s" $s) -}}
+{{- $active := and (ne ($s.Get "target") "") (not (in .entry.url "#")) (strings.HasSuffix .cur ($s.Get "target")) -}}
+<a href="{{ $s.Get "href" }}" class="{{ .class }}{{ if $active }} active{{ end }}">{{ .entry.title }}</a>
