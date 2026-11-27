@@ -220,9 +220,7 @@ The use of extensions requires additional build steps. Make sure to use the `Ext
     <version>3.8.1</version>
     <configuration>
         <verbose>true</verbose>
-        <compilerVersion>1.8</compilerVersion>
-        <source>1.8</source>
-        <target>1.8</target>
+        <release>17</release>
         <annotationProcessors>
             <annotationProcessor>org.pf4j.processor.ExtensionAnnotationProcessor</annotationProcessor>
         </annotationProcessors>
@@ -231,7 +229,7 @@ The use of extensions requires additional build steps. Make sure to use the `Ext
         <dependency>
             <groupId>org.pf4j</groupId>
             <artifactId>pf4j</artifactId>
-            <version>3.0.1</version>
+            <version>3.14.1</version>
         </dependency>
     </dependencies>
 </plugin>

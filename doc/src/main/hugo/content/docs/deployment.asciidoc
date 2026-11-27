@@ -42,7 +42,7 @@ After=basic.target network.target syslog.target
 [Service]
 User=node
 Restart=on-failure
-ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=512m -Dstorage.diskCache.bufferSize=512 -cp mariadb-java-client-3.1.2.jar:mesh-database-connector-mariadb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
+ExecStart=/usr/bin/java -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=512m -cp mariadb-java-client-3.1.2.jar:mesh-database-connector-mariadb-X.X.X.jar:mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 WorkingDirectory=/opt/mesh-server
 LimitMEMLOCK=infinity
 LimitNOFILE=65536
@@ -55,7 +55,7 @@ WantedBy=multi-user.target
 ----
 
 NOTE: The given limits are mandatory. Especially the `LimitNOFILE` setting must be set to prevent database issues.
-NOTE: If using Mesh Enterprise Edition, replace `com.gentics.mesh.server.ServerRunner` with `com.gentics.mesh.enterprise.server.ServerRunner` in the lines above.
+NOTE: The Enterprise Edition uses the same main class `com.gentics.mesh.server.ServerRunner`. Replace the MariaDB connector and driver in the lines above with an Enterprise database connector (e.g. `mesh-enterprise-database-connector-postgres-X.X.X.jar`) and the matching JDBC driver.
 
 You can also change the `Wants` and `After` setting if you run Elasticsearch on the same server. In that case it is recommended to start Gentics Mesh after Elasticsearch has been started.
 
@@ -97,7 +97,7 @@ link:https://github.com/gentics/mesh-compose/tree/master[Full example on GitHub]
 version: "3"
 services:
   mesh:
-    image: gentics/mesh:0.31.0
+    image: gentics/mesh:X.X.X
     container_name: mesh-server
     environment:
       - MESH_DB_CONNECTOR_CLASSPATH=/connector
@@ -105,7 +105,7 @@ services:
       - MESH_JDBC_CONNECTION_USERNAME=admin
       - MESH_JDBC_CONNECTION_PASSWORD=admin
       - MESH_ELASTICSEARCH_URL=http://elasticsearch:9200
-      - MESH_ELASTICSEARCH_START_EMBEDDED=false
+      - MESH_ELASTICSEARCH_COMPLIANCE_MODE=ES_9
       - MESH_AUTH_KEYSTORE_PASS=changeme
       - MESH_MONITORING_HTTP_HOST=0.0.0.0
     stop_grace_period: 5m
@@ -122,10 +122,11 @@ services:
         hard: 40000
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.6.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.7
     container_name: mesh-elasticsearch
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     stop_grace_period: 5m

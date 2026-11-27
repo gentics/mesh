@@ -33,7 +33,7 @@ docker run \
 
 === Use MariaDB-connected container
 
-Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC connector, which can be downloaded from the link:https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector[official website]. For instance, below is how a dedicated `docker-compose` setup may look like.
+Other variant for an easy, yet production ready start is to use https://hub.docker.com/r/gentics/mesh-mariadb/[mesh-mariadb] image, providing along an external instance of MariaDB 10.3+ database as a data storage, and a JDBC driver, which is not included in the image. It can be downloaded from the link:https://mariadb.com/downloads/connectors/connectors-data-access/java8-connector[official website] and has to be mounted into the container at `/mesh/database/`. For instance, below is how a dedicated `docker-compose` setup may look like.
 
 First, initialize an empty database in your MariaDB, as well as its user:
 
@@ -52,10 +52,12 @@ Include the following `mesh` container into your `docker-compose.yml`:
     image: gentics/mesh-mariadb
     volumes:
       - mesh-uploads:/uploads
+      - /whatever/path/you/chose/for/the/mariadb-java-client-3.1.2.jar:/mesh/database/mariadb.jar
     ports:
       - '8080:8080'
     environment:
       MESH_DATABASE_ADDRESS: <host:port of a MariaDB. For instance, if the name of MariaDB container is `mariadb`, the content here will be `mariadb:3306`>
+      MESH_JDBC_DATABASE_NAME: mesh
       MESH_JDBC_CONNECTION_USERNAME: <your database user>
       MESH_JDBC_CONNECTION_PASSWORD: <password of your database user>
       MESH_INITIAL_ADMIN_PASSWORD: "admin"
@@ -83,7 +85,7 @@ java -cp mesh-database-connector-hsqldb-X.X.X.jar:mesh-server-X.X.X.jar com.gent
 java -cp mesh-database-connector-hsqldb-X.X.X.jar;mesh-server-X.X.X.jar com.gentics.mesh.server.ServerRunner
 ----
 
-The same example for MariaDB database will require the same database setup, as in the link:{{ relref "getting-started.asciidoc" }}#_use_mariadb_connected_container[Docker setup above], with the following command lines:
+The same example for MariaDB database will require the same database setup, as in the link:{{< relref "getting-started.asciidoc" >}}#_use_mariadb_connected_container[Docker setup above], with the following command lines:
 
 
 === For Unix/Linux/MacOS
@@ -114,9 +116,9 @@ __Features:__
 * link:{{< relref "features.asciidoc" >}}#_link_resolving[Link handling]
 * link:{{< relref "elasticsearch.asciidoc" >}}[Powerful search]
 * link:{{< relref "building-blocks.asciidoc" >}}#_user[Users, Groups, Roles]
-* link:{{< relref "authentication.asciidoc" >}}#_oauth2[Keycloak / OAuth 2 support]
+* link:{{< relref "authentication.asciidoc" >}}#_oauth2_oidc[Keycloak / OAuth 2 support]
 * link:{{< relref "features.asciidoc" >}}#_versioning[Versioning]
-* link:{{< relref "features.asciidoc" >}}#_eventbus_bridge_websocket[Web Socket]
+* link:{{< relref "events.asciidoc" >}}#_eventbus_bridge_websocket[Web Socket]
 * link:{{< relref "clustering.asciidoc" >}}[Clustering]
 * link:{{< relref "plugin-system.asciidoc" >}}[Plugin System]
 
@@ -125,7 +127,7 @@ __Features:__
 * You organize your contents and media assets in *projects*. 
 * A *schema* is used to define the structure of a content type (e.g. product, blog post). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
 * The actual content items of your project are called *nodes* and always follow a schema.
-* *Everything is a node*, there is no separate concept for media assets. To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
+* *Everything is a node*, there is no separate concept for media assets. To get you started, the schemas _content_, _folder_ and _binary_content_ are created on first startup, which you may customize to your needs and liking!
 * Nodes can be tagged. A *tag family* groups *tags* that semantically belong together and is defined for a specific project.
 * Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of *automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
 * With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blog post such as YouTube videos, image galleries, Google maps, image captions, vcards, quotes, or text paragraphs to be mixed and matched.

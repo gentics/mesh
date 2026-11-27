@@ -17,7 +17,7 @@ While it is perfectly legitimate to organize your contents in a simple, flat str
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
-There are two properties when defining a link:{{< relref "building-blocks.asciidoc" >}}#_schemas[schema] for your nodes that are of importance in this respect.
+There are two properties when defining a link:{{< relref "building-blocks.asciidoc" >}}#_schema[schema] for your nodes that are of importance in this respect.
 
 . ```container```: if true, nodes can contain child nodes and build a node tree.
 . ```segmentField```: allows to specify which schema field should be considered the path segment for the current node, i.e., it’s the basis for building URLs.
@@ -648,6 +648,7 @@ The same can be achieved using the node specific navigation endpoint. In this ca
 }
 ----
 
+[[breadcrumbs]]
 == Breadcrumbs
 
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
@@ -1031,7 +1032,7 @@ Valid links:
 
 == File Upload
 
-Binary data can be attached to node binary fields. The ```{apiLatest}/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field.
+Binary data can be attached to node binary fields. The ```{apiLatest}/:projectName/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field.
 
 NOTE: This endpoint is accepting ```multipart/form-data```, only.
 
@@ -1062,11 +1063,13 @@ The mimeType of binaries which don't have a `mimeType` property will be automati
 
 === Configuration
 
-Gentics Mesh stores all binary files on the filesystem. The default directory ```data/binaryfiles``` can be changed in the upload section of the main configuration file ```mesh.yml```.
+Gentics Mesh stores the binary files of `binary` fields on the filesystem. The default directory ```data/binaryFiles``` can be changed in the upload section (```upload.directory```) of the main configuration file ```mesh.yml```.
 
-The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
+Alternatively, binaries can be stored in Amazon S3 by using `s3binary` fields (see link:{{< relref "building-blocks.asciidoc" >}}#_s3_binary[S3 Binary] and link:{{< relref "administration-guide.asciidoc" >}}#_s3_storage_options[S3 Storage Options]).
 
-For more information on available settings have a look at the link:{{< relref "administration-guide.asciidoc" >}}#_settings[administration guide].
+The upload limit can be configured in bytes using the ```upload.byteLimit``` setting.
+
+For more information on available settings have a look at the link:{{< relref "administration-guide.asciidoc" >}}#_upload_options[administration guide].
 
 === Metadata handling
 
@@ -1399,7 +1402,7 @@ NOTE: The following example links, require prior authentication with user ```adm
 ==== Querying Role Permissions
 The link:/docs/api/#roles__roleUuid__permissions__pathToElement__get[```GET {apiLatest}/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
 
-For example, the link:{{< relref "references.asciidoc" >}}#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
+For example, the link:{{< relref "authentication.asciidoc" >}}[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
 
 Note that a request with user ```anonymous``` will yield a _Missing object permissions_ error response.
 
@@ -1441,7 +1444,7 @@ TIP: If you need to grant permission on users of a specific group, please use th
 ===== Example
 The following example shows how to grant the ```Editor Role``` role the permission to read all users. Since this is an operation to be performed on a set of users, the element path ```/users``` needs to be used together with property ```recursive=true```.
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "authentication.asciidoc" >}}[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 You can query the updated permissions with user ```admin```.
 
@@ -1473,7 +1476,7 @@ Permissions on a single or multiple groups are applied via ```/groups/:uuid``` p
 The following example shows how to grant the ```Editor Role``` role the permission to read a specific group (i.e. ```Client Group```) and its users (i.e. ```webclient```). This operation needs to be applied recursively (i.e., ```recursive=true```), otherwise ```read``` permissions would be granted to the group, only.
 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "authentication.asciidoc" >}}[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 You can query the updated permissions with user ```admin```.
 
@@ -1507,7 +1510,7 @@ By granting permissions on roles, you effectively grant users the right to chang
 ===== Example
 The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles.
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "references.asciidoc" >}}#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:{{< relref "authentication.asciidoc" >}}[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 You can query the updated permissions with user ```admin```.
 
@@ -1881,7 +1884,7 @@ Please note the started *node migration* will be processed asynchronously and th
 This migration is different from a schema version migration. The branch node migration just takes care of making all nodes from the previous branch available in the newly created branch.
 Unlike the schema migration the node migration will not create new language variant versions.
 
-You can use the eventbus bridge or the dedicated ```{apiLatest}/admin/status/migrations``` endpoint to query the migration status.
+You can use the eventbus bridge or the dedicated ```{apiLatest}/admin/jobs``` endpoint to query the migration status.
 The ```migrated``` JSON property within the branch response also indicates whether the node migration has been completed.
 
 Note: Migrated nodes will still have the same _uuid_ as before.
@@ -1933,10 +1936,10 @@ NOTE: Taggings to nodes are not versioned.
 
 === Deleting Nodes
 
-Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```{apiLatest}/:projectName/node/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
+Deleting nodes is also branch specific. Deleting a node via ```DELETE``` to ```{apiLatest}/:projectName/nodes/:uuid?branch=winter2016``` will delete the node and all its sub nodes from the _winter2016_ branch.
 The node will be completely removed from the system if no more contents are referenced within any branch.
 
-It is also possible to just delete a specific language variant via ```DELETE``` to ```{apiLatest}/:projectName/node/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
+It is also possible to just delete a specific language variant via ```DELETE``` to ```{apiLatest}/:projectName/nodes/:uuid/languages/en?branch=winter2016``` from branch _winter2016_.
 
 === Updating Nodes
 
@@ -2082,7 +2085,7 @@ The posted list of changes will be validated and stored when valid. A schema mig
 
 The https://github.com/sockjs[SockJS] compliant ```{apiLatest}/eventbus``` endpoint can be used to register to migration specific messages.
 
-Additionally to websocket it is possible to query whether a migration is running via the ```{apiLatest}/admin/status/migrations``` endpoint.
+Additionally to websocket it is possible to query whether a migration is running via the ```{apiLatest}/admin/jobs``` endpoint.
 
 Sending a schema to ```{apiLatest}/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
 
@@ -2160,7 +2163,7 @@ By default updating a schema will create a new schema version and the nodes will
 If you want to defer this operation you can set the `updateAssignedBranches` query parameter to false when updating a schema/microschemaModel.
 This leads to a new schema version being created but the version would not be linked to your current branch and no migration would be invoked.
 
-Once a job has been queued and a migration has been invoked the status can be checked via the `{apiLatest}/admin/status/migrations` endpoint.
+Once a job has been queued and a migration has been invoked the status can be checked via the `{apiLatest}/admin/jobs` endpoint.
 
 A job will only be removed from the job list when the job completed without any error. Erroneous jobs will stay in the job list.
 This way interrupted migrations can be picked up and executed once again.

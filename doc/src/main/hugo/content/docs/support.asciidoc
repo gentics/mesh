@@ -24,20 +24,16 @@ Given a version number **MAJOR**.**MINOR**.**PATCH**:
 
 == Release Cycle
 
-We use the rolling release model and thus release new features in regular one month intervals.
+Gentics Mesh is released as part of the Gentics Content Management Platform (CMP). The link:{{< relref "changelog.asciidoc" >}}[changelog] lists which Gentics Mesh versions belong to which CMP release.
 
-Bugfix and security patches will be included in patch level releases. We plan to support these releases for one year after a major release.
-
-Fixes and minor updates are currently published in two week interval.
+Bugfix and security patches will be included in patch level releases.
 
 == Community Support
 
-You can chat with us via link:https://gitter.im/gentics/mesh[our gitter channel] or create link:http://stackoverflow.com/questions/tagged/gentics-mesh[Stackoverflow questions].
+You can create link:http://stackoverflow.com/questions/tagged/gentics-mesh[Stackoverflow questions].
 
-Issues can be reported via link:https://github.com/gentics/mesh/issues[Github]. 
+Issues can be reported via link:https://github.com/gentics/mesh/issues[Github].
 
 == Unsupported releases
-
-We are currently no longer supporting releases below version 2.1.0.
 
 Manually build versions (e.g. SNAPSHOT builds) or patches versions are not supported.

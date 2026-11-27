@@ -99,10 +99,10 @@ NOTE: It is important to understand that a node is just a container for language
 | link:++/docs/api#project__nodes__nodeUuid__children_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/children```]
 
 | Delete the language specific content of a node
-| link:++/docs/api#project__nodes__nodeUuid__languages__language__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/language/:language```]
+| link:++/docs/api#project__nodes__nodeUuid__languages__language__delete++[```DELETE {apiLatest}/:projectName/nodes/:nodeUuid/languages/:language```]
 
 | Get the publish status for the given language of a node
-| link:++/docs/api#project__nodes__nodeUuid__languages__language__published_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/language/:language/published```]
+| link:++/docs/api#project__nodes__nodeUuid__languages__language__published_get++[```GET {apiLatest}/:projectName/nodes/:nodeUuid/languages/:language/published```]
 
 | Move a node
 | link:++/docs/api#project__nodes__nodeUuid__moveTo__toUuid__post++[```POST {apiLatest}/:projectName/nodes/:nodeUuid/moveTo/:toUuid```]
@@ -145,7 +145,7 @@ include::content/docs/api/response{apiLatest}/\{project\}/nodes/\{nodeUuid\}/200
 
 Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields. Available <<Schema Field Types,field types>> are  ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```, ```json```. You can think of a schema as a blueprint for new content items.
 
-TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:{{< relref "features.asciidoc" >}}#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:{{< relref "features.asciidoc" >}}#_navigation[navigation menus], link:{{< relref "features.asciidoc" >}}#_breadcrumbs[breadcrumbs] and link:{{< relref "features.asciidoc" >}}#_prettyurls[pretty URLs].
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:{{< relref "features.asciidoc" >}}#contenttree[content trees] in Gentics Mesh and leveraging the power of automatic link:{{< relref "features.asciidoc" >}}#navigation[navigation menus], link:{{< relref "features.asciidoc" >}}#_breadcrumbs[breadcrumbs] and link:{{< relref "features.asciidoc" >}}#prettyurls[pretty URLs].
 
 === API endpoints
 
@@ -168,13 +168,13 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | link:++/docs/api#schemas__schemaUuid__post++[```POST {apiLatest}/schemas/:schemaUuid```]
 
 | Delete a schema
-| link:++/docs/api#schemas__schemaUuid__delete++[```DELETE {apiLatest}/schema/:schemaUuid```]
+| link:++/docs/api#schemas__schemaUuid__delete++[```DELETE {apiLatest}/schemas/:schemaUuid```]
 
 | Create a changeset for link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[migrating] a schema and all affected nodes
-| link:++/docs/api#schemas__schemaUuid__diff_post++[```POST {apiLatest}/schema/:schemaUuid/diff```]
+| link:++/docs/api#schemas__schemaUuid__diff_post++[```POST {apiLatest}/schemas/:schemaUuid/diff```]
 
 | link:{{< relref "features.asciidoc" >}}#_schema_microschema_migration[Migrate] a schema and all affected nodes with a set of changes
-| link:++/docs/api#schemas__schemaUuid__changes_post++[```POST {apiLatest}/schema/:schemaUuid/changes```]
+| link:++/docs/api#schemas__schemaUuid__changes_post++[```POST {apiLatest}/schemas/:schemaUuid/changes```]
 
 |======
 
@@ -570,7 +570,7 @@ This user object has a standard set of properties, e.g.```firstname```, ```lastn
 
 TIP: Gentics Mesh supports *user management for your apps*! The property ```nodeReference``` is used for storing additional user-related data based on a schema you define, thus allowing for extensible user profiles.
 
-In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:{{< relref "references.asciidoc" >}}#_authentication[authentication] mechanisms.
+In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:{{< relref "authentication.asciidoc" >}}[authentication] mechanisms.
 
 === API endpoints
 
@@ -638,31 +638,31 @@ include::content/docs/api/response{apiLatest}/users/\{userUuid\}/200/example.jso
 | link:++/docs/api#groups__post++[```POST {apiLatest}/groups/```]
 
 | Get a group
-| link:++/docs/api#groups__groupUuid__get++[```GET {apiLatest}/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__get++[```GET {apiLatest}/groups/:groupUuid```]
 
 | Update a group
-| link:++/docs/api#groups__groupUuid__post++[```POST {apiLatest}/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__post++[```POST {apiLatest}/groups/:groupUuid```]
 
 | Delete a group
-| link:++/docs/api#groups__groupUuid__delete++[```DELETE {apiLatest}/group/:groupUuid```]
+| link:++/docs/api#groups__groupUuid__delete++[```DELETE {apiLatest}/groups/:groupUuid```]
 
 | Get all roles assigned to a group
-| link:++/docs/api#groups__groupUuid__roles_get++[```GET {apiLatest}/group/:groupUuid/roles```]
+| link:++/docs/api#groups__groupUuid__roles_get++[```GET {apiLatest}/groups/:groupUuid/roles```]
 
 | Assign a role to a group
-| link:++/docs/api#groups__groupUuid__roles__roleUuid__post++[```POST {apiLatest}/group/:groupUuid/roles/:rolesUuid```]
+| link:++/docs/api#groups__groupUuid__roles__roleUuid__post++[```POST {apiLatest}/groups/:groupUuid/roles/:rolesUuid```]
 
 | Remove a role from a group
-| link:++/docs/api#groups__groupUuid__roles__roleUuid__delete++[```DELETE {apiLatest}/group/:groupUuid/roles/:rolesUuid```]
+| link:++/docs/api#groups__groupUuid__roles__roleUuid__delete++[```DELETE {apiLatest}/groups/:groupUuid/roles/:rolesUuid```]
 
 | Get all users assigned to a group
-| link:++/docs/api#groups__groupUuid__users_get++[```GET {apiLatest}/group/:groupUuid/users```]
+| link:++/docs/api#groups__groupUuid__users_get++[```GET {apiLatest}/groups/:groupUuid/users```]
 
 | Add user to a group
-| link:++/docs/api#groups__groupUuid__users__userUuid__post++[```POST {apiLatest}/group/:groupUuid/users/:userUuid```]
+| link:++/docs/api#groups__groupUuid__users__userUuid__post++[```POST {apiLatest}/groups/:groupUuid/users/:userUuid```]
 
 | Remove user from a group
-| link:++/docs/api#groups__groupUuid__users__userUuid__delete++[```DELETE {apiLatest}/group/:groupUuid/users/:userUuid```]
+| link:++/docs/api#groups__groupUuid__users__userUuid__delete++[```DELETE {apiLatest}/groups/:groupUuid/users/:userUuid```]
 |======
 
 === Response Sample

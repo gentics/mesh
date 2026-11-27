@@ -160,7 +160,7 @@ public class ElasticSearchOptions implements Option {
 	private MappingMode mappingMode = DEFAULT_MAPPING_MODE;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7 and ES_8.")
+	@JsonPropertyDescription("This setting controls the compliance mode for Elasticsearch. Currently supported modes are ES_6, ES_7, ES_8 and ES_9.")
 	@EnvironmentVariable(name = MESH_ELASTICSEARCH_COMPLIANCE_MODE_ENV, description = "Override the search compliance mode.")
 	private ComplianceMode complianceMode = DEFAULT_COMPLIANCE_MODE;
 

@@ -8,7 +8,7 @@ include::content/docs/variables.adoc-include[]
 
 Authentication Service Plugin API can be used to create plugins which can extend the authentication/authorization functionality of Gentics Mesh.
 
-Those plugins are intended to work in conjunction with the link:{{< relref "authentication.asciidoc" >}}#_oauth2[OAuth2] interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.
+Those plugins are intended to work in conjunction with the link:{{< relref "authentication.asciidoc" >}}#_oauth2_oidc[OAuth2] interation. When the OAuth2 integration with the Keycloak Identity Provider is enabled Gentics Mesh will automatically sync users provided by Keycloak with the users that are stored in Gentics Mesh.
 
 Once a JWT has been obtained by keycloak it can be used for Gentics Mesh requests. The token is validated and the user is synced. 
 

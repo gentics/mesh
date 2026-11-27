@@ -144,7 +144,7 @@ You can now deploy start a new Gentics Mesh instance which will deploy the plugi
 docker run --rm \
     -v $PWD/target/mesh-graphql-library-example-plugin-0.0.1-SNAPSHOT.jar:/plugins/graphql.jar \
     -p 8080:8080 \
-    gentics/mesh:0.38.0
+    gentics/mesh:X.X.X
 ----
 
 

@@ -52,7 +52,7 @@ public class ClusterOptions implements Option {
 	private Integer vertxPort = DEFAULT_VERTX_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all database master nodes are eligible.")
+	@JsonPropertyDescription("The coordinator regex can be used to control which nodes in the cluster are eligible to be elected in a coordinator master election. When left empty all nodes are eligible.")
 	@EnvironmentVariable(name = MESH_CLUSTER_COORDINATOR_REGEX_ENV, description = "Override the cluster coordinator regex.")
 	private String coordinatorRegex;
 
